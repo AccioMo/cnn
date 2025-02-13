@@ -14,7 +14,7 @@
 # include "utils.hpp"
 
 class NeuralNetwork {
-	private:
+	protected:
 		int		_size;
 		Matrix	_entropy;
 		Matrix	_confidence;
@@ -25,17 +25,22 @@ class NeuralNetwork {
 		double	_beta2;
 
 	public:
-		OutputLayer					output_layer;
 		std::vector<HiddenLayer>	hidden_layers;
+		OutputLayer					output_layer;
 
 		/* `nodes` is an array of size `size` (hehe). It should contain 
 		the size - aka. num of nodes (neurons) - of each layer. */
 		NeuralNetwork( );
-		NeuralNetwork( int size, 
-					int *nodes, 
-					double learning_rate = 0.01,
-					double l2_lambda = 0.0001,
-					double beta1 = 0.9,
+		NeuralNetwork( std::vector<int> nodes, 
+					double learning_rate = 0.01, 
+					double l2_lambda = 0.0001, 
+					double beta1 = 0.9, 
+					double beta2 = 0.999 );
+		NeuralNetwork( std::vector<HiddenLayer> hidden_layers, 
+					OutputLayer output_layer,
+					double learning_rate = 0.01, 
+					double l2_lambda = 0.0001, 
+					double beta1 = 0.9, 
 					double beta2 = 0.999 );
 
 		NeuralNetwork( const char *filename );

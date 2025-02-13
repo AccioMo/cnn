@@ -11,19 +11,19 @@ typedef std::vector<std::vector<double>> t_vec;
 class Matrix {
 	private:
 		int	_rows;
-		int	_columns;
+		int	_cols;
 
 	public:
 		t_vec	m;
 
 		Matrix( void );
 		Matrix( t_vec array );
-		Matrix( int rows, int columns );
-		Matrix( int rows, int columns, double rand_range );
+		Matrix( int rows, int cols );
+		Matrix( int rows, int cols, double rand_range );
 		~Matrix();
 
 		int	rows( void ) const;
-		int	columns( void ) const;
+		int	cols( void ) const;
 
 		/* default matrix addition and subtraction. if the matrices 
 		are of different sizes it attempts a broadcast */
@@ -46,23 +46,24 @@ class Matrix {
 		Matrix	operator-( const double scalar ) const;
 		Matrix	operator+( const double scalar ) const;
 
-		/* sums the matrix along its columns (collapsing rows) */
-		Matrix	sum_columns( void ) const;
+		/* sums the matrix along its cols (collapsing rows) */
+		Matrix	sum_cols( void ) const;
 
-		/* sums the matrix along its rows (collapsing columns) */
+		/* sums the matrix along its rows (collapsing cols) */
 		Matrix	sum_rows( void ) const;
 
 		/* matrix transpose */
 		Matrix	transpose( void ) const;
 
-		/* repeats columns/rows `n` times. used in broadcast */
-		Matrix	repeat_columns( int n ) const;
+		/* repeats cols/rows `n` times. used in broadcast */
+		Matrix	repeat_cols( int n ) const;
 		Matrix	repeat_rows( int n ) const;
 
-		/* hadamard product. used in multiplication overload */
-		Matrix	hadamard_product( const Matrix &mult ) const;
+		/* dot product. used in multiplication overload */
+		Matrix	dot( const Matrix &mult ) const;
 
-		/* hadamard division. used in division overload */
+		/* elementwize (hadamard) operations */
+		Matrix	hadamard_product( const Matrix &mult ) const;
 		Matrix	hadamard_division( const Matrix &divide ) const;
 
 		/* elementwise square */
@@ -90,6 +91,9 @@ class Matrix {
 		
 		/* returns maximum value on each row */
 		Matrix	row_max() const;
+
+		/* returns the a flipped version the matrix */
+		Matrix	flip( void ) const;
 };
 
 std::ostream& operator<<(std::ostream& os, const Matrix& matrix);

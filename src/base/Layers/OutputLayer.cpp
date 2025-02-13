@@ -21,10 +21,10 @@ Matrix	&OutputLayer::feedforward( const Matrix &prev_outputs ) {
 	numerical stability (in case `x` 
 	is a large positive number).
 	*/
-	Matrix	logit = (prev_outputs * this->_weights) + this->_biases;
-	Matrix	logit_exp = exp(logit - logit.row_max());
-	this->_outputs = logit_exp / (logit_exp.sum_rows().repeat_columns(logit_exp.columns()));
-	return (this->_outputs);
+	this->_z = (prev_outputs * this->_weight) + this->_bias;
+	Matrix	logit_exp = exp(this->_z - this->_z.row_max());
+	this->_a = logit_exp / (logit_exp.sum_rows().repeat_cols(logit_exp.cols()));
+	return (this->_a);
 }
 
 void	OutputLayer::backpropagation( const Matrix &expected_outputs ) {
@@ -35,8 +35,7 @@ void	OutputLayer::backpropagation( const Matrix &expected_outputs ) {
 	difference between the expected and predicted 
 	outputs. thus the following ...
 	*/
-	this->_errors = this->_outputs - expected_outputs;
-	this->_deltas = this->_errors;
+	this->_error = this->_a - expected_outputs;
 }
 
 double	OutputLayer::getAccuracy( void ) const {

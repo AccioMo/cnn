@@ -11,14 +11,13 @@ HiddenLayer::HiddenLayer( int index, int input_size, int output_size )
 HiddenLayer::~HiddenLayer() { }
 
 Matrix	&HiddenLayer::feedforward( const Matrix &prev_outputs ) {
-	Matrix	logit = (prev_outputs * this->_weights) + this->_biases;
-	this->_outputs = ReLU(logit);
-	return (this->_outputs);
+	this->_z = (prev_outputs * this->_weight) + this->_bias;
+	this->_a = ReLU(this->_z);
+	return (this->_a);
 }
 
 void	HiddenLayer::backpropagation( const BaseLayer &next_layer ) {
-	this->_errors = next_layer.getDeltas() * next_layer.getWeights().transpose();
-	this->_deltas = this->_errors.hadamard_product(ReLU_derivative(this->_outputs));
+	this->_error = next_layer.getError().dot(next_layer.getWeight().transpose()).hadamard_product(ReLU_derivative(this->_z));
 }
 
 int  HiddenLayer::getIndex( void ) const {

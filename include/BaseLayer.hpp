@@ -13,16 +13,18 @@ class BaseLayer {
 		std::string	_type;
 
 		/* number of neuron/nodes/units in the network */
-		int			_neurons;
+		int			_size;
 
 		/* these weights and biases should 
 		connect this layer with the next one */
-		Matrix		_weights;
-		Matrix		_biases;
+		Matrix		_weight;
+		Matrix		_bias;
 
-		/* predicted outputs based on this 
-		layer's weights and biases */
-		Matrix		_outputs;
+		/* pre-activation outputs */
+		Matrix		_z;
+
+		/* post-activation outputs */
+		Matrix		_a;
 
 		/* errors is the raw difference between 
 		predicted and expected output, calculated 
@@ -32,13 +34,7 @@ class BaseLayer {
 
 		Here it's the intermediate state from 
 		output to the 'real' back-propagated error */
-		Matrix		_errors;
-
-		/* loss delta: final back-propagated error for 
-		the layer. calculated using the derivative of 
-		the activation function and the raw error 
-		value `_errors` */
-		Matrix		_deltas;
+		Matrix		_error;
 
 		/* gradient of the loss: ðL/ðx
 		(loss with respect to weights) */
@@ -69,17 +65,15 @@ class BaseLayer {
 
 		int 	getSize( void ) const;
 		void    setSize( int new_size );
-		Matrix  getWeights( void ) const;
-		void    setWeights( const Matrix &new_weights );
-		Matrix  getBiases( void ) const;
-		void    setBiases( Matrix &new_biases );
+		Matrix  getWeight( void ) const;
+		void    setWeight( const Matrix &new_weight );
+		Matrix  getBias( void ) const;
+		void    setBias( Matrix &new_bias );
 
-		Matrix  getOutputs( void ) const;
-		void    setOutputs( Matrix &new_outputs );
-		Matrix  getErrors( void ) const;
-		void    setErrors( Matrix &new_errors );
-		Matrix  getDeltas( void ) const;
-		void    setDeltas( Matrix &new_deltas );
+		Matrix  getOutput( void ) const;
+		void    setOutput( Matrix &new_output );
+		Matrix  getError( void ) const;
+		void    setError( Matrix &new_error );
 
 		std::string	getType() const;
 };

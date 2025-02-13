@@ -2,13 +2,13 @@ CLANG = g++
 FLAGS = -Wall -Wextra -Werror -Wshadow -std=c++11
 DEBUG_FLAGS = -g -fsanitize=address
 OPTIMIZATION_FLAGS = -flto -O3
-HEADERS = math.hpp utils.hpp Matrix.hpp NeuralNetworkInit.hpp \
-			NeuralNetworkMain.hpp BaseLayer.hpp HiddenLayer.hpp \
-			OutputLayer.hpp ConvLayer.hpp
-STRUCTURE_FILES = NeuralNetworkInit.cpp NeuralNetworkMain.cpp
+HEADERS = math.hpp utils.hpp convolution.hpp Matrix.hpp \
+			NeuralNetwork.hpp BaseLayer.hpp HiddenLayer.hpp \
+			OutputLayer.hpp ConvLayer.hpp stb_image.h stb_image_write.h
+STRUCTURE_FILES = NeuralNetworkInit.cpp NeuralNetworkMain.cpp CNNInit.cpp CNNMain.cpp
 LAYER_FILES = BaseLayer.cpp HiddenLayer.cpp OutputLayer.cpp ConvLayer.cpp
 MATH_FILES = math.cpp Matrix.cpp 
-UTILS_FILES = utils.cpp
+UTILS_FILES = utils.cpp convolution.cpp
 MAIN_FILE = main.cpp
 
 INCLUDE_DIR = include/

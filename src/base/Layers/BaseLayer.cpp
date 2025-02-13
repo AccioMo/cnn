@@ -3,10 +3,10 @@
 
 BaseLayer::BaseLayer( int input_size, int output_size )
 	: _type("none"),
-	_neurons(output_size),
-	_weights(Matrix(input_size, output_size, \
+	_size(output_size),
+	_weight(Matrix(input_size, output_size, \
 		xavier_glorot_init(input_size, output_size))),
-	_biases(Matrix(1, output_size, 0.1)),
+	_bias(Matrix(1, output_size, 0.1)),
 	_m(Matrix(input_size, output_size, 0.0)),
 	_v(Matrix(input_size, output_size, 0.0))
 { }
@@ -18,68 +18,68 @@ void	BaseLayer::update( const Matrix &inputs,
 							  double beta1, 
 							  double beta2 ) {
 
-	this->_gradient = inputs.transpose() * this->_deltas;
-	Matrix	weight_gradient = this->_gradient + (this->_weights * l2_reg);
+	this->_gradient = inputs.transpose() * this->_error;
+
+	(void)beta1;
+	(void)beta2;
+	(void)timestep;
+	(void)l2_reg;
+	/* ------------------------------------------------------------------- 
+	Matrix	weight_gradient = this->_gradient + (this->_weight * l2_reg);
 
 	this->_m = this->_m * beta1 + weight_gradient * (1.0 - beta1);
 	this->_v = this->_v * beta2 + weight_gradient.square() * (1.0 - beta2);
 
 	Matrix	m_hat = this->_m / (1.0 - std::pow(beta1, timestep));
 	Matrix	v_hat = this->_v / (1.0 - std::pow(beta2, timestep));
+	this->_gradient = m_hat / v_hat.sqrt() + 1e-8;
+	 ------------------------------------------------------------------- */
 
-	this->_weights = this->_weights - (m_hat / v_hat.sqrt() + 1e-8) * learning_rate;
+	this->_weight = this->_weight - this->_gradient * learning_rate;
 
-	this->_biases = this->_biases - (this->_deltas.sum_columns() * learning_rate);
+	this->_bias = this->_bias - (this->_error.sum_cols() * learning_rate);
 }
 
 BaseLayer::~BaseLayer() { }
 
-Matrix  BaseLayer::getWeights( void ) const {
-    return (this->_weights);
+Matrix  BaseLayer::getWeight( void ) const {
+    return (this->_weight);
 }
 
-void    BaseLayer::setWeights( const Matrix &new_weights ) {
-	this->_weights = new_weights;
+void    BaseLayer::setWeight( const Matrix &new_weight ) {
+	this->_weight = new_weight;
 }
 
 int  BaseLayer::getSize( void ) const {
-    return (this->_neurons);
+    return (this->_size);
 }
 
 void    BaseLayer::setSize( int new_size ) {
-	this->_neurons = new_size;
+	this->_size = new_size;
 }
 
-Matrix  BaseLayer::getBiases( void ) const {
-    return (this->_biases);
+Matrix  BaseLayer::getBias( void ) const {
+    return (this->_bias);
 }
 
-void    BaseLayer::setBiases( Matrix &new_biases ) {
-	this->_biases = new_biases;
+void    BaseLayer::setBias( Matrix &new_bias ) {
+	this->_bias = new_bias;
 }
 
-Matrix  BaseLayer::getOutputs( void ) const {
-    return (this->_outputs);
+Matrix  BaseLayer::getOutput( void ) const {
+    return (this->_a);
 }
 
-void    BaseLayer::setOutputs( Matrix &new_outputs ) {
-	this->_outputs = new_outputs;
+void    BaseLayer::setOutput( Matrix &new_output ) {
+	this->_a = new_output;
 }
 
-Matrix  BaseLayer::getErrors( void ) const {
-    return (this->_errors);
+Matrix  BaseLayer::getError( void ) const {
+    return (this->_error);
 }
 
-void    BaseLayer::setErrors( Matrix &new_errors ) {
-	this->_errors = new_errors;
-}
-
-Matrix  BaseLayer::getDeltas( void ) const {
-    return (this->_deltas);
-}
-
-void    BaseLayer::setDeltas( Matrix &new_deltas ) {
-	this->_deltas = new_deltas;
+void    BaseLayer::setError( Matrix &new_error ) {
+	this->_error = new_error;
 }
 
 std::string  BaseLayer::getType( void ) const {
@@ -88,8 +88,8 @@ std::string  BaseLayer::getType( void ) const {
 
 std::ostream	&operator<<( std::ostream &os, BaseLayer &nl ) {
 	os << "\t --- " << nl.getType() << " layer --- " << std::endl;
-	os << "  < Weights > " << std::endl << nl.getWeights() << std::endl;
+	os << "  < Weights > " << std::endl << nl.getWeight() << std::endl;
 	os << std::endl;
-	os << "  < Biases > " << std::endl << nl.getBiases() << std::endl;
+	os << "  < Bias > " << std::endl << nl.getBias() << std::endl;
 	return (os);
 }

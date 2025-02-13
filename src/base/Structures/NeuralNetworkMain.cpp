@@ -23,7 +23,7 @@ void	NeuralNetwork::update( const Matrix &inputs, int timestep ) {
 	for (auto &layer : hidden_layers) {
 		layer.update(outputs, this->_learning_rate, timestep, \
 			this->_l2_lambda, this->_beta1, this->_beta2);
-		outputs = layer.getOutputs();
+		outputs = layer.getOutput();
 	}
 	output_layer.update(outputs, this->_learning_rate, timestep, \
 		this->_l2_lambda, this->_beta1, this->_beta2);
@@ -104,9 +104,9 @@ Matrix	NeuralNetwork::run( const Matrix input ) {
 
 	int	possible_outputs[10] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
 	for (int i = 0; i < POSSIBILE_OUTPUTS; i++) {
-		std::cout << possible_outputs[i] << ": " << std::fixed << std::setprecision(2) << this->output_layer.getOutputs().m[0][i] * 100 << "%" << std::endl;
+		std::cout << possible_outputs[i] << ": " << std::fixed << std::setprecision(2) << this->output_layer.getOutput().m[0][i] * 100 << "%" << std::endl;
 	}
-	return (this->output_layer.getOutputs());
+	return (this->output_layer.getOutput());
 }
 
 Matrix	NeuralNetwork::runOnImage( const char *filename ) {
@@ -146,14 +146,14 @@ void	NeuralNetwork::printData( const Matrix expected_outputs ) const {
 Matrix	NeuralNetwork::calculateEntropy( void ) const {
 	/* entropy = -sum(p * log(p)) */
 	double	epsilon = 1e-15;
-	Matrix	predicted_outputs = this->output_layer.getOutputs();
+	Matrix	predicted_outputs = this->output_layer.getOutput();
 	Matrix	entropy = predicted_outputs.hadamard_product(log(predicted_outputs + epsilon)).sum_rows() * -1.0;
 	return (entropy);
 }
 
 Matrix	NeuralNetwork::calculateAccuracy( const Matrix &expected_ouputs ) const {
 	/* assuming softmax activation */
-	Matrix	predicted_ouputs = this->output_layer.getOutputs().argmax();
+	Matrix	predicted_ouputs = this->output_layer.getOutput().argmax();
 	return (predicted_ouputs == expected_ouputs.argmax());
 }
 

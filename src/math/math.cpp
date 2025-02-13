@@ -54,7 +54,7 @@ Matrix	log( const Matrix &input ) {
 Matrix	abs( const Matrix &input ) {
 	Matrix	output(input);
 	for (int i = 0; i < input.rows(); i++) {
-		for (int j = 0; j < input.columns(); j++) {
+		for (int j = 0; j < input.cols(); j++) {
 			output.m[i][j] = std::abs(input.m[i][j]);
 		}
 	}
