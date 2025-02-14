@@ -11,7 +11,7 @@ HiddenLayer::HiddenLayer( int index, int input_size, int output_size )
 HiddenLayer::~HiddenLayer() { }
 
 Matrix	&HiddenLayer::feedforward( const Matrix &prev_outputs ) {
-	this->_z = (prev_outputs * this->_weight) + this->_bias;
+	this->_z = prev_outputs.dot(this->_weight) + this->_bias;
 	this->_a = ReLU(this->_z);
 	return (this->_a);
 }

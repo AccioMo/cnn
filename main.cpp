@@ -11,8 +11,8 @@ int main( int ac, char **av )
 	std::string config = "configs/20i-92.14%.bin";
 
 	CNN	network = CNN(std::vector<int>{7, 5, 3},
-						std::vector<int>{128, 64, 10},
-						0.01, 
+						std::vector<int>{784, 128, 64, 10},
+						0.0001, 
 						0.001, 
 						0.9, 
 						0.999);

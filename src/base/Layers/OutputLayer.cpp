@@ -21,7 +21,7 @@ Matrix	&OutputLayer::feedforward( const Matrix &prev_outputs ) {
 	numerical stability (in case `x` 
 	is a large positive number).
 	*/
-	this->_z = (prev_outputs * this->_weight) + this->_bias;
+	this->_z = prev_outputs.dot(this->_weight) + this->_bias;
 	Matrix	logit_exp = exp(this->_z - this->_z.row_max());
 	this->_a = logit_exp / (logit_exp.sum_rows().repeat_cols(logit_exp.cols()));
 	return (this->_a);

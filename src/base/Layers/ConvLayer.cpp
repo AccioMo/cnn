@@ -12,7 +12,9 @@ ConvLayer::~ConvLayer() { }
 
 Matrix	&ConvLayer::feedforward( const Matrix &prev_outputs ) {
 	Matrix	kernel = this->_weight;
+	std::cout << "prev_outputs: " << prev_outputs.rows() << ", " << prev_outputs.cols() << std::endl;
 	this->_z = convolve(prev_outputs, kernel);
+	std::cout << "this->_z: " << this->_z.rows() << ", " << this->_z.cols() << std::endl;
 	/* `_z` is the convoluted output, feature map, 
 	which i will pass through a max pooling or 
 	average pooling to decrease the amount of 
@@ -27,7 +29,17 @@ Matrix	&ConvLayer::feedforward( const Matrix &prev_outputs ) {
 }
 
 void	ConvLayer::backpropagation( const BaseLayer &next_layer ) {
-	Matrix	kernel = next_layer.getWeight();
+	/*
+		formula for backpropagation in a convolutional:
+			δ = (δ^{next} * W.rot(180)) ⊙ f'(z)
+
+		`δ` is the error, `δ^{next}` is the error of the 
+		next layer, `W` is the weight of the current layer,
+		⊙ is element-wise multiplication, `f'` is the
+		derivative of the activation function, and `z` is
+		the pre-activation output of the current layer.
+	*/
+	Matrix	kernel = this->getWeight();
 	this->_error = convolve(next_layer.getError(), kernel.flip()).hadamard_product(ReLU_derivative(this->_z));
 }
 

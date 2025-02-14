@@ -3,6 +3,9 @@
 
 void	CNN::feedforward( const Matrix &inputs ) {
 	Matrix	outputs = inputs;
+	for (auto &layer : conv_layers) {
+		outputs = layer.feedforward(outputs);
+	}
 	for (auto &layer : hidden_layers) {
 		outputs = layer.feedforward(outputs);
 	}
@@ -16,10 +19,19 @@ void	CNN::backpropagation( const Matrix &expected_outputs ) {
 		this->hidden_layers[i].backpropagation(*next_layer);
 		next_layer = &this->hidden_layers[i];
 	}
+	for (int i = conv_layers.size() - 1; i >= 0; i--) {
+		this->conv_layers[i].backpropagation(*next_layer);
+		next_layer = &this->conv_layers[i];
+	}
 }
 
 void	CNN::update( const Matrix &inputs, int timestep ) {
 	Matrix	outputs = inputs;
+	for (auto &layer : conv_layers) {
+		layer.update(outputs, this->_learning_rate, timestep, \
+			this->_l2_lambda, this->_beta1, this->_beta2);
+		outputs = layer.getOutput();
+	}
 	for (auto &layer : hidden_layers) {
 		layer.update(outputs, this->_learning_rate, timestep, \
 			this->_l2_lambda, this->_beta1, this->_beta2);

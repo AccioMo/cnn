@@ -11,6 +11,8 @@ BaseLayer::BaseLayer( int input_size, int output_size )
 	_v(Matrix(input_size, output_size, 0.0))
 { }
 
+BaseLayer::~BaseLayer( ) { }
+
 void	BaseLayer::update( const Matrix &inputs, 
 							  double learning_rate, 
 							  int timestep, 
@@ -18,7 +20,7 @@ void	BaseLayer::update( const Matrix &inputs,
 							  double beta1, 
 							  double beta2 ) {
 
-	this->_gradient = inputs.transpose() * this->_error;
+	this->_gradient = inputs.transpose().dot(this->_error);
 
 	(void)beta1;
 	(void)beta2;
@@ -36,11 +38,9 @@ void	BaseLayer::update( const Matrix &inputs,
 	 ------------------------------------------------------------------- */
 
 	this->_weight = this->_weight - this->_gradient * learning_rate;
-
+	
 	this->_bias = this->_bias - (this->_error.sum_cols() * learning_rate);
 }
-
-BaseLayer::~BaseLayer() { }
 
 Matrix  BaseLayer::getWeight( void ) const {
     return (this->_weight);
