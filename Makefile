@@ -7,7 +7,7 @@ HEADERS = math.hpp utils.hpp convolution.hpp Matrix.hpp \
 			OutputLayer.hpp ConvLayer.hpp stb_image.h stb_image_write.h
 STRUCTURE_FILES = NeuralNetworkInit.cpp NeuralNetworkMain.cpp CNNInit.cpp CNNMain.cpp
 LAYER_FILES = BaseLayer.cpp HiddenLayer.cpp OutputLayer.cpp ConvLayer.cpp
-MATH_FILES = math.cpp Matrix.cpp 
+MATH_FILES = math.cpp Matrix.cpp tensor_math.cpp
 UTILS_FILES = utils.cpp convolution.cpp
 MAIN_FILE = main.cpp
 

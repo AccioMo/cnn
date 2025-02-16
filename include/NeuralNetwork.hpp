@@ -55,17 +55,6 @@ class NeuralNetwork {
 		/* ... update ... */
 		void	update( const Matrix &inputs, int timestep );
 
-		/* ... training ... */
-		void	train( Matrix input_batch, Matrix output_batch, int epochs, int timestep );
-		void	trainOnFile( const char *filename, const char *labels, const char *output_file );
-
-		/* ... testing ... */
-		void	test( const Matrix input, const Matrix expected_outputs );
-		void	testOnFile( const char *filename, const char *labels );
-
-		Matrix	run( const Matrix input );
-		Matrix	runOnImage( const char *filename );
-
 		/* ... printing ... */
 		void	printData( const Matrix expected_outputs ) const;
 

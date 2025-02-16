@@ -1,11 +1,14 @@
 
 #include "CNN.hpp"
 
-void	CNN::feedforward( const Matrix &inputs ) {
-	Matrix	outputs = inputs;
+void	CNN::feedforward( const Tensor4D &inputs ) {
+	Tensor4D	filter_outputs = inputs;
 	for (auto &layer : conv_layers) {
-		outputs = layer.feedforward(outputs);
+		filter_outputs = layer.feedforward(filter_outputs);
 	}
+	std::cout << "convolutional layers done: ";
+	std::cout << filter_outputs.dimensions() << std::endl;
+	Matrix	outputs = flatten(filter_outputs);
 	for (auto &layer : hidden_layers) {
 		outputs = layer.feedforward(outputs);
 	}
@@ -19,29 +22,35 @@ void	CNN::backpropagation( const Matrix &expected_outputs ) {
 		this->hidden_layers[i].backpropagation(*next_layer);
 		next_layer = &this->hidden_layers[i];
 	}
+	int d1 = this->conv_layers[0].getKernel().dimension(0);
+	int d2 = this->conv_layers[0].getKernel().dimension(1);
+	int d3 = this->conv_layers[0].getKernel().dimension(2);
+	int d4 = this->conv_layers[0].getKernel().dimension(3);
+	Tensor4D	next_error = unflatten(next_layer->getError(), d1, d2, d3, d4);
 	for (int i = conv_layers.size() - 1; i >= 0; i--) {
-		this->conv_layers[i].backpropagation(*next_layer);
-		next_layer = &this->conv_layers[i];
+		this->conv_layers[i].backpropagation(next_error);
+		next_error = this->conv_layers[i].getError();
 	}
 }
 
-void	CNN::update( const Matrix &inputs, int timestep ) {
-	Matrix	outputs = inputs;
+void	CNN::update( const Tensor4D &inputs, int timestep ) {
+	Tensor4D	outputs = inputs;
 	for (auto &layer : conv_layers) {
 		layer.update(outputs, this->_learning_rate, timestep, \
 			this->_l2_lambda, this->_beta1, this->_beta2);
 		outputs = layer.getOutput();
 	}
+	Matrix	flat_outputs = flatten(outputs);
 	for (auto &layer : hidden_layers) {
-		layer.update(outputs, this->_learning_rate, timestep, \
+		layer.update(flat_outputs, this->_learning_rate, timestep, \
 			this->_l2_lambda, this->_beta1, this->_beta2);
-		outputs = layer.getOutput();
+		flat_outputs = layer.getOutput();
 	}
-	output_layer.update(outputs, this->_learning_rate, timestep, \
+	output_layer.update(flat_outputs, this->_learning_rate, timestep, \
 		this->_l2_lambda, this->_beta1, this->_beta2);
 }
 
-void	CNN::train( Matrix input_batch, Matrix output_batch, int epochs, int timestep ) {
+void	CNN::train( const Tensor4D &input_batch, Matrix &output_batch, int epochs, int timestep ) {
 	for (int age = 0; age < epochs; age++) {
 		this->feedforward(input_batch);
 		this->backpropagation(output_batch);
@@ -55,8 +64,8 @@ void	CNN::train( Matrix input_batch, Matrix output_batch, int epochs, int timest
 
 void	CNN::trainOnFile( const char *filename, const char *labels, const char *output_file ) {
 
-	std::vector<Matrix>	inputs = get_input_batch(filename);
-	std::vector<Matrix>	outputs = get_input_labels(labels);
+	std::vector<Tensor4D>	inputs = get_mnist_batch(filename);
+	std::vector<Matrix>	outputs = get_mnist_labels(labels);
 
 	std::cout << "Network constructed!" << std::endl;
 
@@ -65,8 +74,8 @@ void	CNN::trainOnFile( const char *filename, const char *labels, const char *out
 	int	total_iterations = TRAIN_SIZE / BATCH_SIZE;
 	for (int i = 0; i < total_iterations; i++) {
 		std::cout << "Iteration " << i + 1 << " of " << total_iterations << std::endl;
-		Matrix	normalized_inputs = inputs[i].normalize(INPUT_MIN, INPUT_MAX);
-		Matrix	normalized_outputs = outputs[i].normalize(OUTPUT_MIN, OUTPUT_MAX);
+		Tensor4D	normalized_inputs = normalize(inputs[i], INPUT_MIN, INPUT_MAX);
+		Matrix		normalized_outputs = outputs[i].normalize(OUTPUT_MIN, OUTPUT_MAX);
 		this->train(normalized_inputs, normalized_outputs, EPOCHS, i + 1);
 		this->printData(normalized_outputs);
 		std::cout << "   ---	" << std::endl;
@@ -81,15 +90,15 @@ void	CNN::trainOnFile( const char *filename, const char *labels, const char *out
 	std::cout << "Network saved!" << std::endl;
 }
 
-void	CNN::test( const Matrix input, const Matrix expected_outputs ) {
+void	CNN::test( const Tensor4D &input, const Matrix &expected_outputs ) {
 	this->feedforward(input);
 	this->printData(expected_outputs);
 }
 
 void	CNN::testOnFile( const char *filename, const char *labels ) {
 
-	std::vector<Matrix>	t_inputs = get_input_batch(filename);
-	std::vector<Matrix>	t_outputs = get_input_labels(labels);
+	std::vector<Tensor4D>	t_inputs = get_mnist_batch(filename);
+	std::vector<Matrix>	t_outputs = get_mnist_labels(labels);
 
 	std::cout << "   --- TESTING ---" << std::endl;
 
@@ -97,7 +106,7 @@ void	CNN::testOnFile( const char *filename, const char *labels ) {
 	int	test_iterations = TEST_SIZE / BATCH_SIZE;
 	for (int i = 0; i < test_iterations; i++) {
 		std::cout << "Iteration " << i + 1 << " of " << test_iterations << std::endl;
-		Matrix	normalized_inputs = t_inputs[i].normalize(INPUT_MIN, INPUT_MAX);
+		Tensor4D	normalized_inputs = normalize(t_inputs[i], INPUT_MIN, INPUT_MAX);
 		Matrix	normalized_outputs = t_outputs[i].normalize(OUTPUT_MIN, OUTPUT_MAX);
 		this->feedforward(normalized_inputs);
 		this->backpropagation(normalized_outputs);
@@ -109,8 +118,8 @@ void	CNN::testOnFile( const char *filename, const char *labels ) {
 	std::cout << "TEST ACCURACY\t: " << accuracy * 100 << "%" << std::endl;
 }
 
-Matrix	CNN::run( const Matrix input ) {
-	Matrix	normalized_input = input.normalize(INPUT_MIN, INPUT_MAX);
+Matrix	CNN::run( const Tensor4D &input ) {
+	Tensor4D	normalized_input = normalize(input, INPUT_MIN, INPUT_MAX);
 
 	this->feedforward(normalized_input);
 
@@ -134,12 +143,16 @@ Matrix	CNN::runOnImage( const char *filename ) {
 		return (Matrix());
 	}
 
-	Matrix	input(1, IMAGE_SIZE);
-	for (int j = 0; j < IMAGE_SIZE; j++) {
-		if (image[j] > 255 * 0.95) 
-			input.m[0][j] = 0.0;
-		else
-			input.m[0][j] = static_cast<double>(255 - image[j]);
+	Tensor4D	input(1, width, height, channels);
+	for (int i = 0; i < width; i++) {
+		for (int j = 0; j < width; j++) {
+			for (int k = 0; k < height; k++) {
+				if (image[j] > 255 * 0.95) 
+					input(0, i, j, k) = 0.0;
+				else
+					input(0, i, j, k) = static_cast<double>(255 - image[j]);
+			}
+		}
 	}
 	
 	Matrix	output = this->run(input);
@@ -148,7 +161,7 @@ Matrix	CNN::runOnImage( const char *filename ) {
 	return (output);
 }
 
-void	CNN::printData( const Matrix expected_outputs ) const {
+void	CNN::printData( const Matrix &expected_outputs ) const {
 	double max_entropy = -std::log(1.0 / (double)POSSIBILE_OUTPUTS);
 	std::cout << "accuracy (end)\t: " << this->calculateAccuracy(expected_outputs).mean() * 100 << "%" << std::endl;
 	std::cout << "entropy\t\t: " << this->calculateEntropy().mean() << " (max " << max_entropy << ")" << std::endl;

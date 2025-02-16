@@ -1,41 +1,61 @@
 
 # include "convolution.hpp"
 
-Matrix	convolve(const Matrix &input, const Matrix &kernel) {
-	if (input.rows() < kernel.rows() || input.cols() < kernel.cols()) {
-		std::cerr << "error: kernel is larger than input" << std::endl;
-		exit(1);
-	} else if (kernel.rows() % 2 == 0 || kernel.cols() % 2 == 0) {
-		std::cerr << "error: kernel must have odd dimensions" << std::endl;
-		exit(1);
-	}
-	Matrix	output(input.rows(), input.cols());
-	int size = kernel.rows() / 2;
-	for (int i = 0; i < output.rows(); i++) {
-		for (int j = 0; j < output.cols(); j++) {
-			Matrix tmp(kernel.rows(), kernel.cols());
-			for (int k = 0; k < tmp.rows(); k++) {
-				for (int h = 0; h < tmp.cols(); h++) {
-					int ci = i + (k - size);
-					if (ci < 0)
-						ci = 0;
-					else if (ci >= output.rows())
-						ci = output.rows() - 1;
-					int cj = j + (h - size);
-					if (cj < 0)
-						cj = 0;
-					else if (cj >= output.cols())
-						cj = output.cols() - 1;
-					tmp.m[k][h] = input.m[ci][cj];
-				}
-			}
+Tensor4D convolve(const Tensor4D &input, const Tensor4D &kernel, int stride, int padding) {
+    int batch_size = input.dimension(0);
+    int channels = input.dimension(1);
+    int kernel_height = kernel.dimension(0);
+    int kernel_width = kernel.dimension(1);
+    int input_height = input.dimension(2);
+    int input_width = input.dimension(3);
+    int output_channels = kernel.dimension(3);
 
-			tmp = tmp.hadamard_product(kernel);
-
-			output.m[i][j] = sum(tmp);
-		}
+	if (kernel_width != kernel_height) {
+		std::cerr << "kernel fucked" << std::endl;
+		exit(1);
+	
 	}
-	return (output);
+
+    Tensor4D output(batch_size, input_width, input_height, output_channels);
+    
+    int output_height = (input_height + 2*padding - kernel_height) / stride + 1;
+    int output_width = (input_width + 2*padding - kernel_width) / stride + 1;
+    
+    Tensor4D padded_input;
+    if (padding > 0) {
+        std::array<std::pair<int, int>, 4> paddings = {
+            std::make_pair(0, 0),
+            std::make_pair(0, 0),
+            std::make_pair(padding, padding),
+            std::make_pair(padding, padding)
+        };
+        padded_input = input.pad(paddings);
+    } else {
+        padded_input = input;
+    }
+    
+    for (int b = 0; b < batch_size; ++b) {
+        for (int oc = 0; oc < output_channels; ++oc) {
+            for (int oh = 0; oh < output_height; ++oh) {
+                for (int ow = 0; ow < output_width; ++ow) {
+                    float sum = 0;
+                    for (int c = 0; c < channels; ++c) {
+                        for (int kh = 0; kh < kernel_height; ++kh) {
+                            for (int kw = 0; kw < kernel_width; ++kw) {
+                                int ih = oh * stride + kh;
+                                int iw = ow * stride + kw;
+                                sum += padded_input(b, c, ih, iw) * 
+                                      kernel(kh, kw, c, oc);
+                            }
+                        }
+                    }
+                    output(b, oc, oh, ow) = sum;
+                }
+            }
+        }
+    }
+
+    return (output);
 }
 
 Matrix	gaussian_blur(int size, double sigma) {

@@ -3,19 +3,27 @@
 # define MATH_HPP
 
 # include "Matrix.hpp"
+# include "ConvLayer.hpp"
 # include <cmath>
 # include <iomanip>
 # include <fstream>
 # include <cstring>
 
-Matrix	ReLU( const Matrix &input );
-Matrix	ReLU_derivative( const Matrix &input );
-Matrix	sigmoid( const Matrix &input );
-Matrix	sigmoid_derivative( const Matrix &input );
-Matrix	exp( const Matrix &input );
-Matrix	log( const Matrix &input );
-Matrix	abs( const Matrix &input );
-double	sum( const Matrix &input );
-double	xavier_glorot_init( int fan_in, int fan_out );
+Tensor4D	ReLU(const Tensor4D &input, double alpha = 0);
+Tensor4D	ReLU_derivative(const Tensor4D &input, double alpha = 0);
+Tensor4D	flip(const Tensor4D& tensor);
+Tensor4D	transpose(const Tensor4D& tensor);
+Tensor4D	unflatten(const Matrix &flat, int d1, int d2, int d3, int d4);
+Tensor4D	normalize(const Tensor4D &tensor, double min, double max);
+Matrix		flatten(const Tensor4D& tensor);
+Matrix		ReLU( const Matrix &input );
+Matrix		ReLU_derivative( const Matrix &input );
+Matrix		sigmoid( const Matrix &input );
+Matrix		sigmoid_derivative( const Matrix &input );
+Matrix		exp( const Matrix &input );
+Matrix		log( const Matrix &input );
+Matrix		abs( const Matrix &input );
+double		sum( const Matrix &input );
+double		xavier_glorot_init( int fan_in, int fan_out );
 
 #endif

@@ -20,25 +20,35 @@ double	ft_get_time(void) {
 	return (counter.tv_sec * 1000.0 + counter.tv_usec / 1000.0);
 }
 
-std::vector<Matrix>	get_input_batch( const char *filename ) {
+std::vector<Tensor4D>	get_mnist_batch( const char *filename ) {
+	int img_width = 28;
+	int img_height = 28;
+	int img_channels = 1;
+	int img_size = img_width * img_height * img_channels;
+
     std::ifstream file(filename, std::ios::binary);
-	std::vector<Matrix>	inputs;
+	std::vector<Tensor4D>	inputs;
 
 	int	size = TRAIN_SIZE / BATCH_SIZE;
     if (file.is_open()) {
 
-		for (int k = 0; k < size; k++) {
-			Matrix	batch_matrix(BATCH_SIZE, IMAGE_SIZE);
+		for (int b = 0; b < size; b++) {
+			Tensor4D	batch_tensor(BATCH_SIZE, img_width, img_height, img_channels);
 
-			std::vector<unsigned char> data(BATCH_SIZE * IMAGE_SIZE);
-			file.read(reinterpret_cast<char *>(data.data()), BATCH_SIZE * IMAGE_SIZE);
+			std::vector<unsigned char> data(BATCH_SIZE * img_size);
+			file.read(reinterpret_cast<char *>(data.data()), BATCH_SIZE * img_size);
 
 			for (int i = 0; i < BATCH_SIZE; i++) {
-				for (int j = 0; j < IMAGE_SIZE; j++) {
-					batch_matrix.m[i][j] = static_cast<double>(data[(i * IMAGE_SIZE) + j]);
+				for (int j = 0; j < img_height; j++) {
+					for (int k = 0; k < img_width; k++) {
+						for (int h = 0; h < img_channels; h++) {
+							int index = (i*img_size) + j*(img_width*img_channels) + k*img_channels + h;
+							batch_tensor(i, j, k, h) = static_cast<double>(data[index]);
+						}
+					}
 				}
 			}
-			inputs.push_back(batch_matrix);
+			inputs.push_back(batch_tensor);
 		}
 		file.close();
     } else {
@@ -47,7 +57,7 @@ std::vector<Matrix>	get_input_batch( const char *filename ) {
 	return (inputs);
 }
 
-std::vector<Matrix>	get_input_labels( const char *filename ) {
+std::vector<Matrix>	get_mnist_labels( const char *filename ) {
     std::ifstream file(filename, std::ios::binary);
 	std::vector<Matrix>	outputs;
 

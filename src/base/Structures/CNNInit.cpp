@@ -1,18 +1,21 @@
 
 #include "CNN.hpp"
 
-CNN::CNN( std::vector<int> convolutional_layers,
+CNN::CNN( std::vector<int> input_shape,
+		std::vector<int> convolutional_layers,
 		std::vector<int> connected_layers, 
 		double learning_rate,
 		double l2_lambda,
 		double beta1,
 		double beta2 )
 	: NeuralNetwork(connected_layers, learning_rate, l2_lambda, beta1, beta2) {
-	if (this->_size < 2)
+	if (this->_size < 2) {
+		std::cerr << "CNN must have at least 2 layers" << std::endl;
 		return ;
+	}
 	this->conv_layers.reserve(convolutional_layers.size());
 	for (size_t i = 0; i < convolutional_layers.size(); i++) {
-		this->conv_layers.emplace_back(ConvLayer(i, convolutional_layers[i]));
+		this->conv_layers.emplace_back(ConvLayer(convolutional_layers[i], input_shape[2], 9));
 	}
 }
 
