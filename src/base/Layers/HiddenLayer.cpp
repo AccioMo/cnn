@@ -1,9 +1,8 @@
 
 #include "HiddenLayer.hpp"
 
-HiddenLayer::HiddenLayer( int index, int input_size, int output_size )
-	: BaseLayer(input_size, output_size),
-	_index(index)
+HiddenLayer::HiddenLayer( int input_size, int output_size )
+	: BaseLayer(input_size, output_size)
 {
 	this->_type = "hidden";
 }
@@ -18,8 +17,4 @@ Matrix	&HiddenLayer::feedforward( const Matrix &prev_outputs ) {
 
 void	HiddenLayer::backpropagation( const BaseLayer &next_layer ) {
 	this->_error = next_layer.getError().dot(next_layer.getWeight().transpose()).hadamard_product(ReLU_derivative(this->_z));
-}
-
-int  HiddenLayer::getIndex( void ) const {
-    return (this->_index);
 }

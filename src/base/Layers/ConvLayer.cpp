@@ -32,7 +32,11 @@ ConvLayer::ConvLayer( int kernel_size, int input_size, int output_size ) {
 ConvLayer::~ConvLayer() { }
 
 Tensor4D	&ConvLayer::feedforward( const Tensor4D &prev_outputs ) {
+	std::cout << "kernel: ";
+	std::cout << this->_kernel.dimensions() << std::endl;
 	this->_z = convolve(prev_outputs, this->_kernel);
+	std::cout << "convolutional layer: ";
+	std::cout << this->_z.dimensions() << std::endl;
 	/* `_z` is the convoluted output, feature map, 
 	which i will pass through a max pooling or 
 	average pooling to decrease the amount of 
@@ -67,7 +71,10 @@ void	ConvLayer::update( const Tensor4D &inputs,
 							  double beta1, 
 							  double beta2 ) {
 
-	this->_gradient = convolve(transpose(inputs), this->_error);
+	std::cout << "updating..." << std::endl;
+	this->_gradient = rev_convolve(inputs, this->_error);
+	std::cout << "gradient: ";
+	std::cout << this->_gradient.dimensions() << std::endl;
 
 	(void)beta1;
 	(void)beta2;

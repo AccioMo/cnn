@@ -22,10 +22,11 @@ void	CNN::backpropagation( const Matrix &expected_outputs ) {
 		this->hidden_layers[i].backpropagation(*next_layer);
 		next_layer = &this->hidden_layers[i];
 	}
-	int d1 = this->conv_layers[0].getKernel().dimension(0);
-	int d2 = this->conv_layers[0].getKernel().dimension(1);
-	int d3 = this->conv_layers[0].getKernel().dimension(2);
-	int d4 = this->conv_layers[0].getKernel().dimension(3);
+	std::cout << "rows: " << next_layer->getOutput().rows() << ", cols: " << next_layer->getOutput().cols() << std::endl;
+	int d1 = this->conv_layers[conv_layers.size() - 1].getOutput().dimension(0);
+	int d2 = this->conv_layers[conv_layers.size() - 1].getOutput().dimension(1);
+	int d3 = this->conv_layers[conv_layers.size() - 1].getOutput().dimension(2);
+	int d4 = this->conv_layers[conv_layers.size() - 1].getOutput().dimension(3);
 	Tensor4D	next_error = unflatten(next_layer->getError(), d1, d2, d3, d4);
 	for (int i = conv_layers.size() - 1; i >= 0; i--) {
 		this->conv_layers[i].backpropagation(next_error);
@@ -71,12 +72,12 @@ void	CNN::trainOnFile( const char *filename, const char *labels, const char *out
 
 	double start = ft_get_time();
 	std::cout << std::endl << "   --- TRAINING ---	" << std::endl;
-	int	total_iterations = TRAIN_SIZE / BATCH_SIZE;
+	int	total_iterations = TRAIN_SIZE / _batch_size;
 	for (int i = 0; i < total_iterations; i++) {
 		std::cout << "Iteration " << i + 1 << " of " << total_iterations << std::endl;
 		Tensor4D	normalized_inputs = normalize(inputs[i], INPUT_MIN, INPUT_MAX);
 		Matrix		normalized_outputs = outputs[i].normalize(OUTPUT_MIN, OUTPUT_MAX);
-		this->train(normalized_inputs, normalized_outputs, EPOCHS, i + 1);
+		this->train(normalized_inputs, normalized_outputs, _epochs, i + 1);
 		this->printData(normalized_outputs);
 		std::cout << "   ---	" << std::endl;
 	}
@@ -103,7 +104,7 @@ void	CNN::testOnFile( const char *filename, const char *labels ) {
 	std::cout << "   --- TESTING ---" << std::endl;
 
 	double	accuracy = 0.0;
-	int	test_iterations = TEST_SIZE / BATCH_SIZE;
+	int	test_iterations = TEST_SIZE / _batch_size;
 	for (int i = 0; i < test_iterations; i++) {
 		std::cout << "Iteration " << i + 1 << " of " << test_iterations << std::endl;
 		Tensor4D	normalized_inputs = normalize(t_inputs[i], INPUT_MIN, INPUT_MAX);

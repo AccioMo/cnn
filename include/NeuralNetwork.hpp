@@ -15,7 +15,12 @@
 
 class NeuralNetwork {
 	protected:
+
 		int		_size;
+		int		_epochs;
+		int		_timestep;
+		int 	_batch_size;
+
 		Matrix	_entropy;
 		Matrix	_confidence;
 

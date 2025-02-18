@@ -1,0 +1,48 @@
+{
+	"input": {
+		"width": 28,
+		"height": 28,
+		"channels": 1
+	},
+	"conv_layers": [
+		{
+			"filters": 9,
+			"kernel_size": 7,
+			"stride": 1,
+			"padding": "same",
+			"activation": "relu"
+		},
+		{
+			"filters": 12,
+			"kernel_size": 5,
+			"stride": 1,
+			"padding": "same",
+			"activation": "relu"
+		},
+		{
+			"filters": 15,
+			"kernel_size": 3,
+			"stride": 1,
+			"padding": "same",
+			"activation": "relu"
+		}
+	],
+	"hidden_layers": [
+		{
+			"units": 128,
+			"activation": "relu"
+		},
+		{
+			"units": 64,
+			"activation": "relu"
+		}
+	],
+	"output_layer": {
+		"units": 10,
+		"activation": "softmax"
+	},
+	"epochs": 10,
+	"batch_size": 128,
+	"learning_rate": 0.001,
+	"l2_reg": 0.01
+}

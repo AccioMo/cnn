@@ -1,25 +1,26 @@
 
 #include "CNN.hpp"
 #include "Matrix.hpp"
-#include <vector>
 
 int main( int ac, char **av )
 {
 	(void)ac;
 	(void)av;
 
-	std::string config = "configs/20i-92.14%.bin";
+	std::ifstream	config_file("architectures/v0-000.json");
+	if (!config_file.is_open()) {
+		std::cerr << "Error opening file: architectures/v0-000.json" << std::endl;
+		return (1);
+	}
+	nlohmann::json	arch;
+	config_file >> arch;
+	config_file.close();
 
-	CNN	network = CNN( std::vector<int>{BATCH_SIZE, 28, 28, 1},
-						std::vector<int>{7, 5, 3},
-						std::vector<int>{2268, 128, 64, 10},
-						0.0001, 
-						0.001, 
-						0.9, 
-						0.999);
+	CNN	network(arch);
+	std::cout << "network created" << std::endl;
 	network.trainOnFile("mnist/mnist_train_images.bin", 
 						"mnist/mnist_train_labels.bin", 
-						config.c_str());
+						"config.bin");
 
 	/*
 	if (ac > 1)

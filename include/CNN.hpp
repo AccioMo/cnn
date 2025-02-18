@@ -4,6 +4,7 @@
 
 # include "NeuralNetwork.hpp"
 # include "ConvLayer.hpp"
+# include "nlohmann/json.hpp"
 
 class CNN : public NeuralNetwork {
 	private:
@@ -12,6 +13,8 @@ class CNN : public NeuralNetwork {
 
 	public:
 		std::vector<ConvLayer>	conv_layers;
+
+		CNN( nlohmann::json arch );
 
 		CNN( std::vector<int> input_shape, 
 				std::vector<int> conv_struct, 

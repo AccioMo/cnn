@@ -105,7 +105,7 @@ std::streamsize get_file_size(const char *filename) {
         file.close();
         return size;
     } else {
-        throw std::runtime_error("Unable to open file");
+        throw std::runtime_error("Unable to open file: ");
     }
 }
 

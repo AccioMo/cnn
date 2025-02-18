@@ -1,7 +1,7 @@
 
 #include "NeuralNetwork.hpp"
 
-NeuralNetwork::NeuralNetwork( void ) : NeuralNetwork({})
+NeuralNetwork::NeuralNetwork( void )
  { }
 
 NeuralNetwork::NeuralNetwork( std::vector<int> nodes,
@@ -18,7 +18,7 @@ NeuralNetwork::NeuralNetwork( std::vector<int> nodes,
 		return ;
 	this->hidden_layers.reserve(_size - 2);
 	for (int i = 0; i < _size - 2; i++) {
-		this->hidden_layers.emplace_back(HiddenLayer(i, nodes[i], nodes[i + 1]));
+		this->hidden_layers.emplace_back(HiddenLayer(nodes[i], nodes[i + 1]));
 	}
 	this->output_layer = OutputLayer(nodes[_size - 2], nodes[_size - 1]);
 }
@@ -39,6 +39,7 @@ NeuralNetwork::NeuralNetwork( std::vector<HiddenLayer> hidden_layers,
 
 NeuralNetwork::NeuralNetwork( const char *filename ) {
 
+	std::cout << "loading network from file: NN" << filename << std::endl;
 	std::streamsize size = get_file_size(filename);
 	std::vector<unsigned char> mnist_train_images = read_binary_file(filename, (size_t)size);
 	
@@ -73,7 +74,7 @@ NeuralNetwork::NeuralNetwork( const char *filename ) {
 			i += sizeof(double);
 		}
 
-		HiddenLayer	hidden_layer(k, config_nodes[k], neurons);
+		HiddenLayer	hidden_layer(config_nodes[k], neurons);
 		hidden_layer.setWeight(weight);
 		hidden_layer.setBias(bias);
 		hidden_layer.setSize(neurons);

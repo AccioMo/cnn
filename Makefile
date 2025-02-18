@@ -1,7 +1,7 @@
 CLANG = g++
-FLAGS = -Wall -Wextra -Werror -Wshadow -std=c++11
+FLAGS = -Wall -Wextra -Werror -Wshadow -std=c++11 -flto
 DEBUG_FLAGS = -g -fsanitize=address
-OPTIMIZATION_FLAGS = -flto -O3
+OPTIMIZATION_FLAGS = -O3
 HEADERS = math.hpp utils.hpp convolution.hpp Matrix.hpp \
 			NeuralNetwork.hpp BaseLayer.hpp HiddenLayer.hpp \
 			OutputLayer.hpp ConvLayer.hpp stb_image.h stb_image_write.h
@@ -28,7 +28,7 @@ DEBUG_OBJ_FILES = $(addprefix $(DEBUG_OBJ_DIR), $(FILES:.cpp=_debug.opp))
 NAME_DEBUG = cnn_debug
 NAME = cnn
 
-all: FLAGS += $(OPTIMIZATION_FLAGS)
+all: FLAGS += $(DEBUG_FLAGS)
 all: $(OBJ_DIR) $(NAME)
 
 # ==== RELEASE ==== #
@@ -54,6 +54,10 @@ $(OBJ_DIR)%.opp: %.cpp $(INCLUDES)
 	$(CLANG) $(FLAGS) -I$(INCLUDE_DIR) -c $< -o $@
 
 # ==== DEBUG ==== #
+
+debug: FLAGS += $(DEBUG_FLAGS)
+debug: $(DEBUG_OBJ_DIR) $(NAME_DEBUG)
+
 $(DEBUG_OBJ_DIR):
 	@mkdir -p $(DEBUG_OBJ_DIR)
 
@@ -71,9 +75,6 @@ $(DEBUG_OBJ_DIR)%_debug.opp: $(UTILS_DIR)%.cpp $(INCLUDES)
 
 $(DEBUG_OBJ_DIR)%_debug.opp: %.cpp $(INCLUDES)
 	$(CLANG) $(FLAGS) -I$(INCLUDE_DIR) -c $< -o $@
-
-debug: FLAGS += $(DEBUG_FLAGS)
-debug: $(DEBUG_OBJ_DIR) $(NAME_DEBUG)
 
 clean:
 	rm -f $(OBJ_FILES)

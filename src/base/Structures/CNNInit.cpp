@@ -1,21 +1,48 @@
 
 #include "CNN.hpp"
 
+CNN::CNN( nlohmann::json arch ) : NeuralNetwork() {
+	_learning_rate = arch["learning_rate"].get<int>();
+	_l2_lambda = arch["l2_reg"].get<int>();
+	_batch_size = arch["batch_size"].get<int>();
+	_epochs = arch["epochs"].get<int>();
+	int input_width = arch["input"]["width"].get<int>();
+	int input_height = arch["input"]["height"].get<int>();
+	int channels = arch["input"]["channels"].get<int>();
+	int prev_layer_size = 0;
+	for (auto &layer : arch["conv_layers"]) {
+		int kernel_size = layer["kernel_size"].get<int>();
+		int filters = layer["filters"].get<int>();
+		int stride = layer["stride"].get<int>();
+		int padding = layer["padding"].get<std::string>() == "same" ? kernel_size / 2 : 0;
+		this->conv_layers.emplace_back(ConvLayer(kernel_size, channels, filters));
+		input_width = (input_width - kernel_size + 2*padding) / stride + 1;
+		input_height = (input_height - kernel_size + 2*padding) / stride + 1;
+		channels = filters;
+		prev_layer_size = (input_width*input_height*channels - kernel_size + 2*padding) / stride + 1;
+	}
+	for (auto &layer : arch["hidden_layers"]) {
+		int neurons = layer["units"].get<int>();
+		this->hidden_layers.emplace_back(HiddenLayer(prev_layer_size, neurons));
+		prev_layer_size = neurons;
+	}
+	int output_size = arch["output_layer"]["units"].get<int>();
+	this->output_layer = OutputLayer(prev_layer_size, output_size);
+}
+
 CNN::CNN( std::vector<int> input_shape,
 		std::vector<int> convolutional_layers,
-		std::vector<int> connected_layers, 
+		std::vector<int> connected_layers,
 		double learning_rate,
 		double l2_lambda,
 		double beta1,
 		double beta2 )
 	: NeuralNetwork(connected_layers, learning_rate, l2_lambda, beta1, beta2) {
-	if (this->_size < 2) {
-		std::cerr << "CNN must have at least 2 layers" << std::endl;
-		return ;
-	}
 	this->conv_layers.reserve(convolutional_layers.size());
+	int input_channel = input_shape[3];
 	for (size_t i = 0; i < convolutional_layers.size(); i++) {
-		this->conv_layers.emplace_back(ConvLayer(convolutional_layers[i], input_shape[2], 9));
+		this->conv_layers.emplace_back(ConvLayer(convolutional_layers[i], input_channel, 9));
+		input_channel = 9;
 	}
 }
 
@@ -32,6 +59,7 @@ CNN::CNN( std::vector<ConvLayer> init_conv_layers,
 
 CNN::CNN( const char *filename ) {
 
+	std::cout << "loading network from file: " << filename << std::endl;
 	std::streamsize size = get_file_size(filename);
 	std::vector<unsigned char> mnist_train_images = read_binary_file(filename, (size_t)size);
 	
@@ -66,7 +94,7 @@ CNN::CNN( const char *filename ) {
 			i += sizeof(double);
 		}
 
-		HiddenLayer	hidden_layer(k, config_nodes[k], neurons);
+		HiddenLayer	hidden_layer(config_nodes[k], neurons);
 		hidden_layer.setWeight(weight);
 		hidden_layer.setBias(bias);
 		hidden_layer.setSize(neurons);
