@@ -11,6 +11,8 @@ void	CNN::feedforward( const Tensor4D &inputs ) {
 	Matrix	outputs = flatten(filter_outputs);
 	for (auto &layer : hidden_layers) {
 		outputs = layer.feedforward(outputs);
+		std::cout << "hidden layer output: ";
+		std::cout << outputs.rows() << "x" << outputs.cols() << std::endl;
 	}
 	output_layer.feedforward(outputs);
 }
@@ -22,16 +24,25 @@ void	CNN::backpropagation( const Matrix &expected_outputs ) {
 		this->hidden_layers[i].backpropagation(*next_layer);
 		next_layer = &this->hidden_layers[i];
 	}
-	std::cout << "rows: " << next_layer->getOutput().rows() << ", cols: " << next_layer->getOutput().cols() << std::endl;
-	int d1 = this->conv_layers[conv_layers.size() - 1].getOutput().dimension(0);
-	int d2 = this->conv_layers[conv_layers.size() - 1].getOutput().dimension(1);
-	int d3 = this->conv_layers[conv_layers.size() - 1].getOutput().dimension(2);
-	int d4 = this->conv_layers[conv_layers.size() - 1].getOutput().dimension(3);
-	Tensor4D	next_error = unflatten(next_layer->getError(), d1, d2, d3, d4);
-	for (int i = conv_layers.size() - 1; i >= 0; i--) {
-		this->conv_layers[i].backpropagation(next_error);
-		next_error = this->conv_layers[i].getError();
+	
+	ConvLayer	*next_conv_layer = &this->conv_layers[conv_layers.size() - 1];
+	std::cout << "init error: ";
+	std::cout << next_conv_layer->getKernel().dimensions() << std::endl;
+	next_conv_layer->backpropagation(*next_layer);
+	std::cout << "next error: ";
+	std::cout << next_conv_layer->getError().dimensions() << std::endl;
+	std::cout << "output: ";
+	std::cout << next_conv_layer->getOutput().dimensions() << std::endl;
+	std::cout << "kernel: ";
+	std::cout << next_conv_layer->getKernel().dimensions() << std::endl;
+	for (int i = conv_layers.size() - 2; i >= 0; i--) {
+		std::cout << "output 1: ";
+		std::cout << this->conv_layers[i].getOutput().dimensions() << std::endl;
+		this->conv_layers[i].backpropagation(*next_conv_layer);
+		next_conv_layer = &this->conv_layers[i];
 	}
+	std::cout << "final error: ";
+	std::cout << next_conv_layer->getError().dimensions() << std::endl;
 }
 
 void	CNN::update( const Tensor4D &inputs, int timestep ) {

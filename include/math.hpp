@@ -2,8 +2,7 @@
 #ifndef MATH_HPP
 # define MATH_HPP
 
-# include "Matrix.hpp"
-# include "ConvLayer.hpp"
+# include "convolution.hpp"
 # include <cmath>
 # include <iomanip>
 # include <fstream>

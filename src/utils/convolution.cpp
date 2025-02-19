@@ -69,40 +69,37 @@ Tensor4D rev_convolve(const Tensor4D &error, const Tensor4D &kernel, int stride,
     int kernel_height = kernel.dimension(0);
     int kernel_width = kernel.dimension(1);
     int input_channels = kernel.dimension(2);
+	std::cout << "---------\n";
+	std::cout << "kernel: ";
+	std::cout << kernel.dimensions() << std::endl;
+	std::cout << "error: ";
+	std::cout << error.dimensions() << std::endl;
 
+	std::cout << "stride: " << stride << std::endl;
+	std::cout << "padding: " << padding << std::endl;
     int input_height = (error_height - 1) * stride + kernel_height - 2 * padding;
     int input_width = (error_width - 1) * stride + kernel_width - 2 * padding;
 
     Tensor4D propagated_error(batch_size, input_height, input_width, input_channels);
-
-    Tensor4D rotated_kernel(kernel_height, kernel_width, input_channels, output_channels);
-    for (int kh = 0; kh < kernel_height; ++kh) {
-        for (int kw = 0; kw < kernel_width; ++kw) {
-            for (int ic = 0; ic < input_channels; ++ic) {
-                for (int oc = 0; oc < output_channels; ++oc) {
-                    rotated_kernel(kh, kw, ic, oc) = kernel(kernel_height - 1 - kh, kernel_width - 1 - kw, ic, oc);
-                }
-            }
-        }
-    }
+    propagated_error.setZero();
+	std::cout << "propagated error: ";
+	std::cout << propagated_error.dimensions() << std::endl;
 
     for (int b = 0; b < batch_size; ++b) {
-        for (int ic = 0; ic < input_channels; ++ic) {
-            for (int ih = 0; ih < input_height; ++ih) {
-                for (int iw = 0; iw < input_width; ++iw) {
-                    float sum = 0;
-                    for (int oc = 0; oc < output_channels; ++oc) {
-                        for (int kh = 0; kh < kernel_height; ++kh) {
-                            for (int kw = 0; kw < kernel_width; ++kw) {
-                                int eh = (ih - kh + padding) / stride;
-                                int ew = (iw - kw + padding) / stride;
-                                if (eh >= 0 && eh < error_height && ew >= 0 && ew < error_width && (ih - kh + padding) % stride == 0 && (iw - kw + padding) % stride == 0) {
-                                    sum += error(b, eh, ew, oc) * rotated_kernel(kh, kw, ic, oc);
+        for (int oc = 0; oc < output_channels; ++oc) {
+            for (int eh = 0; eh < error_height; ++eh) {
+                for (int ew = 0; ew < error_width; ++ew) {
+                    for (int kh = 0; kh < kernel_height; ++kh) {
+                        for (int kw = 0; kw < kernel_width; ++kw) {
+                            int ih = eh * stride + kh - padding;
+                            int iw = ew * stride + kw - padding;
+                            if (ih >= 0 && ih < input_height && iw >= 0 && iw < input_width) {
+                                for (int ic = 0; ic < input_channels; ++ic) {
+                                    propagated_error(b, ih, iw, ic) += error(b, eh, ew, oc) * kernel(kh, kw, ic, oc);
                                 }
                             }
                         }
                     }
-                    propagated_error(b, ih, iw, ic) = sum;
                 }
             }
         }

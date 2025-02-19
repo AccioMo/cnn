@@ -2,10 +2,10 @@
 #ifndef CONVLAYER_HPP
 # define CONVLAYER_HPP
 
-# include "Eigen/Dense"
-# include "unsupported/Eigen/CXX11/Tensor"
+class BaseLayer;
 
-typedef Eigen::Tensor<float, 4>	Tensor4D;
+# include "convolution.hpp"
+# include "BaseLayer.hpp"
 
 class ConvLayer {
 	private:
@@ -36,13 +36,17 @@ class ConvLayer {
 		Tensor4D	_m;
 		Tensor4D	_v;
 
+		int			_stride;
+		int			_padding;
+
 	public:
 		ConvLayer( void );
-		ConvLayer( int kernel_size, int input_size, int output_size );
+		ConvLayer( int kernel_size, int input_size, int output_size, double stride = 1, double padding = 0 );
 		~ConvLayer( );
 
 		Tensor4D &feedforward( const Tensor4D &prev_outputs );
-		void	backpropagation( const Tensor4D &next_error );
+		void	backpropagation( const ConvLayer &next_layer );
+		void	backpropagation( const BaseLayer &next_layer );
 		void	update( const Tensor4D &inputs, 
 							  double learning_rate, 
 							  int timestep, 
@@ -55,7 +59,8 @@ class ConvLayer {
 		Tensor4D	getOutput( void ) const;
 		Tensor4D	getError( void ) const;
 		
-		int		getIndex( void ) const;
+		int			getStride( void ) const;
+		int			getPadding( void ) const;
 };
 
 #endif

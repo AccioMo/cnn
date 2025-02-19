@@ -1,8 +1,8 @@
 
 #include "ConvLayer.hpp"
-#include "convolution.hpp"
 
-ConvLayer::ConvLayer( int kernel_size, int input_size, int output_size ) {
+ConvLayer::ConvLayer( int kernel_size, int input_size, int output_size, double stride, double padding )
+	: _stride(stride), _padding(padding) {
 	/* input_size is the number of channels.
 	output_size is the number of filter outputs */
 	this->_kernel = Tensor4D(kernel_size, kernel_size, input_size, output_size);
@@ -34,7 +34,7 @@ ConvLayer::~ConvLayer() { }
 Tensor4D	&ConvLayer::feedforward( const Tensor4D &prev_outputs ) {
 	std::cout << "kernel: ";
 	std::cout << this->_kernel.dimensions() << std::endl;
-	this->_z = convolve(prev_outputs, this->_kernel);
+	this->_z = convolve(prev_outputs, this->_kernel, this->_stride, this->_padding);
 	std::cout << "convolutional layer: ";
 	std::cout << this->_z.dimensions() << std::endl;
 	/* `_z` is the convoluted output, feature map, 
@@ -50,7 +50,24 @@ Tensor4D	&ConvLayer::feedforward( const Tensor4D &prev_outputs ) {
 	return (this->_a);
 }
 
-void	ConvLayer::backpropagation( const Tensor4D &next_error ) {
+void	ConvLayer::backpropagation( const BaseLayer &next_layer ) {
+	/*
+		backpropagation in last conv layer, 
+		which connects directly to a fully 
+		connected layer, takes a Matrix 
+		backpropagated error, calculates 
+		its own error, and unflattens it.
+	*/
+	Matrix	output = flatten(this->_z);
+	Matrix	flat_error = next_layer.getError().dot(next_layer.getWeight().transpose()).hadamard_product(ReLU_derivative(output));
+	int d1 = this->getOutput().dimension(0);
+	int d2 = this->getOutput().dimension(1);
+	int d3 = this->getOutput().dimension(2);
+	int d4 = this->getOutput().dimension(3);
+	this->_error = unflatten(flat_error, d1, d2, d3, d4);
+}
+
+void	ConvLayer::backpropagation( const ConvLayer &next_layer ) {
 	/*
 		formula for backpropagation in a convolutional:
 			δ = (δ^{next} * W.rot(180)) ⊙ f'(z)
@@ -61,7 +78,7 @@ void	ConvLayer::backpropagation( const Tensor4D &next_error ) {
 		derivative of the activation function, and `z` is
 		the pre-activation output of the current layer.
 	*/
-	this->_error = convolve(next_error, flip(this->_kernel)) * ReLU_derivative(this->_z);
+	this->_error = rev_convolve(next_layer.getError(), flip(next_layer.getKernel()), next_layer.getStride(), next_layer.getPadding()) * ReLU_derivative(this->_z);
 }
 
 void	ConvLayer::update( const Tensor4D &inputs, 
@@ -72,7 +89,7 @@ void	ConvLayer::update( const Tensor4D &inputs,
 							  double beta2 ) {
 
 	std::cout << "updating..." << std::endl;
-	this->_gradient = rev_convolve(inputs, this->_error);
+	this->_gradient = rev_convolve(inputs, this->_error, this->_stride, this->_padding);
 	std::cout << "gradient: ";
 	std::cout << this->_gradient.dimensions() << std::endl;
 
@@ -110,4 +127,12 @@ Tensor4D	ConvLayer::getOutput( void ) const {
 
 Tensor4D	ConvLayer::getError( void ) const {
 	return (this->_error);
+}
+
+int			ConvLayer::getStride( void ) const {
+	return (this->_stride);
+}
+
+int			ConvLayer::getPadding( void ) const {
+	return (this->_padding);
 }

@@ -34,12 +34,13 @@ Tensor4D	ReLU_derivative(const Tensor4D &input, double alpha) {
 
 Tensor4D	flip(const Tensor4D &tensor) {
     Eigen::array<bool, 4> reverse = {true, true, false, false};
-    
+    tensor.reverse(reverse);
+
     return tensor.reverse(reverse);
 }
 
 Tensor4D	transpose(const Tensor4D &tensor) {
-    Eigen::array<int, 4> shuffle = {1, 0, 2, 3};
+    Eigen::array<int, 4> shuffle = {0, 1, 3, 2};
     
     return tensor.shuffle(shuffle);
 }

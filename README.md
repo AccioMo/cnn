@@ -80,3 +80,6 @@ in the next step, we apply regularizations (eg. l1, l2) and optimizations (eg. A
 ```
 	w(new) = w(old) - η * dL/dw
 ```
+
+# Rescources
+[Introduction to Convolutional Neural Networks](https://arxiv.org/pdf/1511.08458)

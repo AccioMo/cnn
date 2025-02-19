@@ -8,32 +8,32 @@
 		{
 			"filters": 9,
 			"kernel_size": 7,
-			"stride": 1,
-			"padding": "same",
+			"stride": 2,
+			"padding": "0",
 			"activation": "relu"
 		},
 		{
 			"filters": 12,
 			"kernel_size": 5,
-			"stride": 1,
-			"padding": "same",
+			"stride": 2,
+			"padding": "0",
 			"activation": "relu"
 		},
 		{
 			"filters": 15,
 			"kernel_size": 3,
-			"stride": 1,
-			"padding": "same",
+			"stride": 2,
+			"padding": "0",
 			"activation": "relu"
 		}
 	],
 	"hidden_layers": [
 		{
-			"units": 128,
+			"units": 64,
 			"activation": "relu"
 		},
 		{
-			"units": 64,
+			"units": 32,
 			"activation": "relu"
 		}
 	],
