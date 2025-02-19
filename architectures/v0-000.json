@@ -15,14 +15,14 @@
 		{
 			"filters": 12,
 			"kernel_size": 5,
-			"stride": 2,
+			"stride": 1,
 			"padding": "0",
 			"activation": "relu"
 		},
 		{
 			"filters": 15,
 			"kernel_size": 3,
-			"stride": 2,
+			"stride": 1,
 			"padding": "0",
 			"activation": "relu"
 		}

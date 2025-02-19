@@ -21,7 +21,6 @@ Tensor4D convolve(const Tensor4D &input, const Tensor4D &kernel, int stride, int
 	
 	}
 
-    padding = int(kernel_width / 2);
     int output_height = (input_height + 2*padding - kernel_height) / stride + 1;
     int output_width = (input_width + 2*padding - kernel_width) / stride + 1;
     

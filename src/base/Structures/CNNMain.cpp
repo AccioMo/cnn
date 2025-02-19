@@ -9,6 +9,8 @@ void	CNN::feedforward( const Tensor4D &inputs ) {
 	std::cout << "convolutional layers done: ";
 	std::cout << filter_outputs.dimensions() << std::endl;
 	Matrix	outputs = flatten(filter_outputs);
+	std::cout << "flattened: ";
+	std::cout << outputs.rows() << "x" << outputs.cols() << std::endl;
 	for (auto &layer : hidden_layers) {
 		outputs = layer.feedforward(outputs);
 		std::cout << "hidden layer output: ";
