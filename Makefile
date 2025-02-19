@@ -28,7 +28,7 @@ DEBUG_OBJ_FILES = $(addprefix $(DEBUG_OBJ_DIR), $(FILES:.cpp=_debug.opp))
 NAME_DEBUG = cnn_debug
 NAME = cnn
 
-all: FLAGS += $(DEBUG_FLAGS)
+all: FLAGS += $(OPTIMIZATION_FLAGS)
 all: $(OBJ_DIR) $(NAME)
 
 # ==== RELEASE ==== #

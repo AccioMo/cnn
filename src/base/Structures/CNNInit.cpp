@@ -16,8 +16,8 @@ CNN::CNN( nlohmann::json arch ) : NeuralNetwork() {
 		int stride = layer["stride"].get<int>();
 		int padding = layer["padding"].get<std::string>() == "same" ? (kernel_size-1) / 2 : 0;
 		this->conv_layers.emplace_back(ConvLayer(kernel_size, channels, filters, stride, padding));
-		input_width = (input_width - kernel_size + 2*padding) / stride + 1;
-		input_height = (input_height - kernel_size + 2*padding) / stride + 1;
+		input_width = floor(double(input_width - kernel_size + 2*padding) / double(stride)) + 1;
+		input_height = floor(double(input_height - kernel_size + 2*padding) / double(stride)) + 1;
 		channels = filters;
 		std::cout << "input: " << input_width << "x" << input_height << "x" << channels << std::endl;
 		prev_layer_size = (input_width*input_height*channels);

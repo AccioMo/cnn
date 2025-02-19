@@ -32,11 +32,7 @@ ConvLayer::ConvLayer( int kernel_size, int input_size, int output_size, double s
 ConvLayer::~ConvLayer() { }
 
 Tensor4D	&ConvLayer::feedforward( const Tensor4D &prev_outputs ) {
-	std::cout << "kernel: ";
-	std::cout << this->_kernel.dimensions() << std::endl;
 	this->_z = convolve(prev_outputs, this->_kernel, this->_stride, this->_padding);
-	std::cout << "convolutional layer: ";
-	std::cout << this->_z.dimensions() << std::endl;
 	/* `_z` is the convoluted output, feature map, 
 	which i will pass through a max pooling or 
 	average pooling to decrease the amount of 
@@ -88,10 +84,8 @@ void	ConvLayer::update( const Tensor4D &inputs,
 							  double beta1, 
 							  double beta2 ) {
 
-	std::cout << "updating..." << std::endl;
-	this->_gradient = rev_convolve(inputs, this->_error, this->_stride, this->_padding);
-	std::cout << "gradient: ";
-	std::cout << this->_gradient.dimensions() << std::endl;
+
+	this->_gradient = gradient_convolve(inputs, this->_error, this->_stride, this->_padding);
 
 	(void)beta1;
 	(void)beta2;
@@ -109,8 +103,8 @@ void	ConvLayer::update( const Tensor4D &inputs,
 	 ------------------------------------------------------------------- */
 
 	this->_kernel = this->_kernel - (this->_gradient * (float)learning_rate);
-
-	this->_bias = this->_bias - (this->_error * (float)learning_rate);
+	// std::cout << this->_bias.dimensions() << std::endl;
+	// this->_bias = this->_bias - (bias_gradient * (float)learning_rate);
 }
 
 Tensor4D	ConvLayer::getKernel( void ) const {

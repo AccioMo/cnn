@@ -65,7 +65,6 @@ Matrix	flatten(const Tensor4D &tensor) {
 }
 
 Tensor4D	unflatten(const Matrix &flat, int d1, int d2, int d3, int d4) {
-	std::cout << "r: " << flat.rows() << " c: " << flat.cols() << std::endl;
 	Tensor4D	tensor(d1, d2, d3, d4);
 	for (int i = 0; i < d1; i++) {
 		for (int j = 0; j < d2; j++) {

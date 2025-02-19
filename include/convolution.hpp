@@ -12,6 +12,7 @@ typedef Eigen::Tensor<float, 4>	Tensor4D;
 
 Tensor4D convolve(const Tensor4D &input, const Tensor4D &kernel, int stride, int padding);
 Tensor4D rev_convolve(const Tensor4D &input, const Tensor4D &output, int stride, int padding);
+Tensor4D gradient_convolve(const Tensor4D &input, const Tensor4D &error, int stride, int padding);
 Matrix	gaussian_blur(int size, double sigma);
 
 #endif

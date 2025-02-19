@@ -6,15 +6,15 @@ void	CNN::feedforward( const Tensor4D &inputs ) {
 	for (auto &layer : conv_layers) {
 		filter_outputs = layer.feedforward(filter_outputs);
 	}
-	std::cout << "convolutional layers done: ";
-	std::cout << filter_outputs.dimensions() << std::endl;
+	// std::cout << "convolutional layers done: ";
+	// std::cout << filter_outputs.dimensions() << std::endl;
 	Matrix	outputs = flatten(filter_outputs);
-	std::cout << "flattened: ";
-	std::cout << outputs.rows() << "x" << outputs.cols() << std::endl;
+	// std::cout << "flattened: ";
+	// std::cout << outputs.rows() << "x" << outputs.cols() << std::endl;
 	for (auto &layer : hidden_layers) {
 		outputs = layer.feedforward(outputs);
-		std::cout << "hidden layer output: ";
-		std::cout << outputs.rows() << "x" << outputs.cols() << std::endl;
+		// std::cout << "hidden layer output: ";
+		// std::cout << outputs.rows() << "x" << outputs.cols() << std::endl;
 	}
 	output_layer.feedforward(outputs);
 }
@@ -28,23 +28,21 @@ void	CNN::backpropagation( const Matrix &expected_outputs ) {
 	}
 	
 	ConvLayer	*next_conv_layer = &this->conv_layers[conv_layers.size() - 1];
-	std::cout << "init error: ";
-	std::cout << next_conv_layer->getKernel().dimensions() << std::endl;
 	next_conv_layer->backpropagation(*next_layer);
-	std::cout << "next error: ";
-	std::cout << next_conv_layer->getError().dimensions() << std::endl;
-	std::cout << "output: ";
-	std::cout << next_conv_layer->getOutput().dimensions() << std::endl;
-	std::cout << "kernel: ";
-	std::cout << next_conv_layer->getKernel().dimensions() << std::endl;
+	// std::cout << "next error: ";
+	// std::cout << next_conv_layer->getError().dimensions() << std::endl;
+	// std::cout << "output: ";
+	// std::cout << next_conv_layer->getOutput().dimensions() << std::endl;
+	// std::cout << "kernel: ";
+	// std::cout << next_conv_layer->getKernel().dimensions() << std::endl;
 	for (int i = conv_layers.size() - 2; i >= 0; i--) {
-		std::cout << "output 1: ";
-		std::cout << this->conv_layers[i].getOutput().dimensions() << std::endl;
+		// std::cout << "output 1: ";
+		// std::cout << this->conv_layers[i].getOutput().dimensions() << std::endl;
 		this->conv_layers[i].backpropagation(*next_conv_layer);
 		next_conv_layer = &this->conv_layers[i];
 	}
-	std::cout << "final error: ";
-	std::cout << next_conv_layer->getError().dimensions() << std::endl;
+	// std::cout << "final error: ";
+	// std::cout << next_conv_layer->getError().dimensions() << std::endl;
 }
 
 void	CNN::update( const Tensor4D &inputs, int timestep ) {

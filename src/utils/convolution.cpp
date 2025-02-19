@@ -2,10 +2,6 @@
 # include "convolution.hpp"
 
 Tensor4D convolve(const Tensor4D &input, const Tensor4D &kernel, int stride, int padding) {
-	std::cout << "input: ";
-	std::cout << input.dimensions() << std::endl;
-	std::cout << "kernel: ";
-	std::cout << kernel.dimensions() << std::endl;
     int batch_size = input.dimension(0);
     int input_height = input.dimension(1);
     int input_width = input.dimension(2);
@@ -21,8 +17,8 @@ Tensor4D convolve(const Tensor4D &input, const Tensor4D &kernel, int stride, int
 	
 	}
 
-    int output_height = (input_height + 2*padding - kernel_height) / stride + 1;
-    int output_width = (input_width + 2*padding - kernel_width) / stride + 1;
+    int output_height = floor(double(input_height + 2*padding - kernel_height) / double(stride)) + 1;
+    int output_width = floor(double(input_width + 2*padding - kernel_width) / double(stride)) + 1;
     
     Tensor4D output(batch_size, output_height, output_width, output_channels);
 
@@ -68,21 +64,11 @@ Tensor4D rev_convolve(const Tensor4D &error, const Tensor4D &kernel, int stride,
     int kernel_height = kernel.dimension(0);
     int kernel_width = kernel.dimension(1);
     int input_channels = kernel.dimension(2);
-	std::cout << "---------\n";
-	std::cout << "kernel: ";
-	std::cout << kernel.dimensions() << std::endl;
-	std::cout << "error: ";
-	std::cout << error.dimensions() << std::endl;
 
-	std::cout << "stride: " << stride << std::endl;
-	std::cout << "padding: " << padding << std::endl;
     int input_height = (error_height - 1) * stride + kernel_height - 2 * padding;
     int input_width = (error_width - 1) * stride + kernel_width - 2 * padding;
 
     Tensor4D propagated_error(batch_size, input_height, input_width, input_channels);
-    propagated_error.setZero();
-	std::cout << "propagated error: ";
-	std::cout << propagated_error.dimensions() << std::endl;
 
     for (int b = 0; b < batch_size; ++b) {
         for (int oc = 0; oc < output_channels; ++oc) {
@@ -104,7 +90,47 @@ Tensor4D rev_convolve(const Tensor4D &error, const Tensor4D &kernel, int stride,
         }
     }
 
-    return propagated_error;
+    return (propagated_error);
+}
+
+Tensor4D gradient_convolve(const Tensor4D &input, const Tensor4D &error, int stride, int padding) {
+    int batch_size = input.dimension(0);
+    int input_height = input.dimension(1);
+    int input_width = input.dimension(2);
+    int input_channels = input.dimension(3);
+
+    int error_height = error.dimension(1);
+    int error_width = error.dimension(2);
+    int output_channels = error.dimension(3);
+
+    int kernel_height = input_height - (error_height - 1) * stride + 2 * padding;
+    int kernel_width = input_width - (error_width - 1) * stride + 2 * padding;
+
+    Tensor4D grad_kernel(kernel_height, kernel_width, input_channels, output_channels);
+
+    for (int b = 0; b < batch_size; ++b) {
+        for (int ic = 0; ic < input_channels; ++ic) {
+            for (int oc = 0; oc < output_channels; ++oc) {
+                for (int kh = 0; kh < kernel_height; ++kh) {
+                    for (int kw = 0; kw < kernel_width; ++kw) {
+                        float sum = 0;
+                        for (int eh = 0; eh < error_height; ++eh) {
+                            for (int ew = 0; ew < error_width; ++ew) {
+                                int ih = eh * stride + kh - padding;
+                                int iw = ew * stride + kw - padding;
+                                if (ih >= 0 && ih < input_height && iw >= 0 && iw < input_width) {
+                                    sum += input(b, ih, iw, ic) * error(b, eh, ew, oc);
+                                }
+                            }
+                        }
+                        grad_kernel(kh, kw, ic, oc) += sum;
+                    }
+                }
+            }
+        }
+    }
+
+    return (grad_kernel);
 }
 
 Matrix	gaussian_blur(int size, double sigma) {
