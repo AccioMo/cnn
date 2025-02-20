@@ -24,10 +24,10 @@ class NeuralNetwork {
 		Matrix	_entropy;
 		Matrix	_confidence;
 
-		double	_learning_rate;
-		double	_l2_lambda;
-		double	_beta1;
-		double	_beta2;
+		float	_learning_rate;
+		float	_l2_lambda;
+		float	_beta1;
+		float	_beta2;
 
 	public:
 		std::vector<HiddenLayer>	hidden_layers;

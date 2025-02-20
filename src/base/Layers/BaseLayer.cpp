@@ -5,7 +5,7 @@ BaseLayer::BaseLayer( int input_size, int output_size )
 	: _type("none"),
 	_size(output_size),
 	_weight(Matrix(input_size, output_size, \
-		xavier_glorot_init(input_size, output_size))),
+		he_init(input_size))),
 	_bias(Matrix(1, output_size, 0.1)),
 	_m(Matrix(input_size, output_size, 0.0)),
 	_v(Matrix(input_size, output_size, 0.0))
@@ -14,11 +14,11 @@ BaseLayer::BaseLayer( int input_size, int output_size )
 BaseLayer::~BaseLayer( ) { }
 
 void	BaseLayer::update( const Matrix &inputs, 
-							  double learning_rate, 
+							  float learning_rate, 
 							  int timestep, 
-							  double l2_reg, 
-							  double beta1, 
-							  double beta2 ) {
+							  float l2_reg, 
+							  float beta1, 
+							  float beta2 ) {
 
 	this->_gradient = inputs.transpose().dot(this->_error);
 

@@ -24,5 +24,6 @@ Matrix		log( const Matrix &input );
 Matrix		abs( const Matrix &input );
 double		sum( const Matrix &input );
 double		xavier_glorot_init( int fan_in, int fan_out );
+double		he_init(int fan_in);
 
 #endif

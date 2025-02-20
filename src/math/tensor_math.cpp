@@ -26,7 +26,7 @@ Tensor4D	ReLU_derivative(const Tensor4D &input, double alpha) {
     Eigen::Map<const Eigen::VectorXf> input_flat(input.data(), total_size);
     Eigen::Map<Eigen::VectorXf> output_flat(output.data(), total_size);
     
-    output_flat = (input_flat.array() > 0).select(Eigen::VectorXf::Constant(total_size, 1.0f),
+    output_flat = (input_flat.array() > 1e-7).select(Eigen::VectorXf::Constant(total_size, 1.0f),
                                               Eigen::VectorXf::Constant(total_size, alpha));
     
     return (output);

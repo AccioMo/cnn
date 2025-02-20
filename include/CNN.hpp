@@ -19,18 +19,18 @@ class CNN : public NeuralNetwork {
 		CNN( std::vector<int> input_shape, 
 				std::vector<int> conv_struct, 
 				std::vector<int> connected_struct, 
-				double learning_rate = 0.01, 
-				double l2_lambda = 0.0001, 
-				double beta1 = 0.9, 
-				double beta2 = 0.999 );
+				float learning_rate = 0.01, 
+				float l2_lambda = 0.0001, 
+				float beta1 = 0.9, 
+				float beta2 = 0.999 );
 
 		CNN( std::vector<ConvLayer> init_conv_layers,
 			std::vector<HiddenLayer> init_hidden_layers,
 			OutputLayer init_output_layer,
-			double learning_rate,
-			double l2_lambda,
-			double beta1,
-			double beta2 );
+			float learning_rate,
+			float l2_lambda,
+			float beta1,
+			float beta2 );
 
 		CNN( const char *filename );
 		~CNN( );

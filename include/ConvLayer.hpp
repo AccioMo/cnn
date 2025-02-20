@@ -41,18 +41,18 @@ class ConvLayer {
 
 	public:
 		ConvLayer( void );
-		ConvLayer( int kernel_size, int input_size, int output_size, double stride = 1, double padding = 0 );
+		ConvLayer( int kernel_size, int input_size, int output_size, int stride = 1, int padding = 0 );
 		~ConvLayer( );
 
 		Tensor4D &feedforward( const Tensor4D &prev_outputs );
 		void	backpropagation( const ConvLayer &next_layer );
 		void	backpropagation( const BaseLayer &next_layer );
 		void	update( const Tensor4D &inputs, 
-							  double learning_rate, 
+							  float learning_rate, 
 							  int timestep, 
-							  double l2_reg, 
-							  double beta1, 
-							  double beta2 );
+							  float l2_reg, 
+							  float beta1, 
+							  float beta2 );
 		
 		Tensor4D	getKernel( void ) const;
 		Tensor4D	getBias( void ) const;

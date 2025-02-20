@@ -2,8 +2,8 @@
 #include "CNN.hpp"
 
 CNN::CNN( nlohmann::json arch ) : NeuralNetwork() {
-	_learning_rate = arch["learning_rate"].get<int>();
-	_l2_lambda = arch["l2_reg"].get<int>();
+	_learning_rate = arch["learning_rate"].get<float>();
+	_l2_lambda = arch["l2_reg"].get<float>();
 	_batch_size = arch["batch_size"].get<int>();
 	_epochs = arch["epochs"].get<int>();
 	int input_width = arch["input"]["width"].get<int>();
@@ -34,10 +34,10 @@ CNN::CNN( nlohmann::json arch ) : NeuralNetwork() {
 CNN::CNN( std::vector<int> input_shape,
 		std::vector<int> convolutional_layers,
 		std::vector<int> connected_layers,
-		double learning_rate,
-		double l2_lambda,
-		double beta1,
-		double beta2 )
+		float learning_rate,
+		float l2_lambda,
+		float beta1,
+		float beta2 )
 	: NeuralNetwork(connected_layers, learning_rate, l2_lambda, beta1, beta2) {
 	this->conv_layers.reserve(convolutional_layers.size());
 	int input_channel = input_shape[3];
@@ -50,10 +50,10 @@ CNN::CNN( std::vector<int> input_shape,
 CNN::CNN( std::vector<ConvLayer> init_conv_layers,
 		std::vector<HiddenLayer> init_hidden_layers,
 		OutputLayer init_output_layer,
-		double learning_rate,
-		double l2_lambda,
-		double beta1,
-		double beta2 )
+		float learning_rate,
+		float l2_lambda,
+		float beta1,
+		float beta2 )
 	: NeuralNetwork(init_hidden_layers, init_output_layer, learning_rate, l2_lambda, beta1, beta2),
 	conv_layers(init_conv_layers)
 { }

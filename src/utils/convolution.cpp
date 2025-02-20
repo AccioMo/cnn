@@ -69,6 +69,7 @@ Tensor4D rev_convolve(const Tensor4D &error, const Tensor4D &kernel, int stride,
     int input_width = (error_width - 1) * stride + kernel_width - 2 * padding;
 
     Tensor4D propagated_error(batch_size, input_height, input_width, input_channels);
+	propagated_error.setZero();
 
     for (int b = 0; b < batch_size; ++b) {
         for (int oc = 0; oc < output_channels; ++oc) {
@@ -107,6 +108,7 @@ Tensor4D gradient_convolve(const Tensor4D &input, const Tensor4D &error, int str
     int kernel_width = input_width - (error_width - 1) * stride + 2 * padding;
 
     Tensor4D grad_kernel(kernel_height, kernel_width, input_channels, output_channels);
+	grad_kernel.setZero();
 
     for (int b = 0; b < batch_size; ++b) {
         for (int ic = 0; ic < input_channels; ++ic) {
@@ -123,7 +125,7 @@ Tensor4D gradient_convolve(const Tensor4D &input, const Tensor4D &error, int str
                                 }
                             }
                         }
-                        grad_kernel(kh, kw, ic, oc) += sum;
+                        grad_kernel(kh, kw, ic, oc) = sum / batch_size;
                     }
                 }
             }
