@@ -3,10 +3,10 @@
 
 ConvLayer::ConvLayer( int kernel_size, int input_size, int output_size, int stride, int padding )
 	: _stride(stride), _padding(padding) {
-	double rand_range = he_init(kernel_size * kernel_size * input_size);
+	double std_deviation = he_init(kernel_size * kernel_size * input_size);
 	std::random_device					rd;
 	std::mt19937						gen(rd());
-	std::uniform_real_distribution<>	dis(-rand_range, rand_range);
+	std::normal_distribution<>	dis(0.0, std_deviation);
 	/* input_size is the number of channels.
 	output_size is the number of filter outputs */
 	this->_kernel = Tensor4D(kernel_size, kernel_size, input_size, output_size);
@@ -102,13 +102,10 @@ void	ConvLayer::update( const Tensor4D &inputs,
 
 	// std::cout << "error: " << this->_error << std::endl;
 	// std::cout << "output: " << this->_a << std::endl;
-	// std::cout << "gradient: " << this->_gradient << std::endl;
-	std::cout << "kernel 1: " << this->_kernel << std::endl;
-	std::cout << "change: " << (this->_gradient * learning_rate) << std::endl;
-	std::cout << "learning rate: " << learning_rate << std::endl;
-	std::cout << "gradient: " << this->_gradient << std::endl;
+	// std::cout << "conv gradient: " << this->_gradient << std::endl;
+	// std::cout << "kernel 1: " << this->_kernel << std::endl;
 	this->_kernel = this->_kernel - (this->_gradient * learning_rate);
-	std::cout << "kernel 2: " << this->_kernel << std::endl;
+	// std::cout << "kernel 2: " << this->_kernel << std::endl;
 	// std::cout << this->_bias.dimensions() << std::endl;
 	// this->_bias = this->_bias - (bias_gradient * (float)learning_rate);
 }

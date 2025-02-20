@@ -37,6 +37,8 @@ void	BaseLayer::update( const Matrix &inputs,
 	this->_gradient = m_hat / v_hat.sqrt() + 1e-8;
 	 ------------------------------------------------------------------- */
 
+	// std::cout << "error: " << this->_error << std::endl;
+	// std::cout << "gradient: " << this->_gradient << std::endl;
 	this->_weight = this->_weight - this->_gradient * learning_rate;
 	
 	this->_bias = this->_bias - (this->_error.sum_cols() * learning_rate);

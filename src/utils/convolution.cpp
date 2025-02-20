@@ -125,12 +125,14 @@ Tensor4D gradient_convolve(const Tensor4D &input, const Tensor4D &error, int str
                                 }
                             }
                         }
-                        grad_kernel(kh, kw, ic, oc) = sum / batch_size;
+                        grad_kernel(kh, kw, ic, oc) += sum;
                     }
                 }
             }
         }
     }
+
+	grad_kernel = grad_kernel / (float)batch_size;
 
     return (grad_kernel);
 }
