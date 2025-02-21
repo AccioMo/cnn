@@ -11,6 +11,8 @@
 
 # define STB_IMAGE_IMPLEMENTATION
 # include "stb_image.h"
+
+#define STB_IMAGE_WRITE_IMPLEMENTATION
 # include "stb_image_write.h"
 
 double	ft_get_time(void) {
@@ -43,7 +45,7 @@ std::vector<Tensor4D>	get_mnist_batch( const char *filename ) {
 					for (int k = 0; k < img_width; k++) {
 						for (int h = 0; h < img_channels; h++) {
 							int index = (i*img_size) + j*(img_width*img_channels) + k*img_channels + h;
-							batch_tensor(i, j, k, h) = static_cast<double>(data[index]);
+							batch_tensor(i, j, k, h) = static_cast<float>(data[index]);
 						}
 					}
 				}
@@ -148,5 +150,6 @@ void write_image(const char* filename, int width, int height, int channels, cons
 
     if (!success) {
         fprintf(stderr, "Error: Could not write image to '%s'\n", filename);
+		perror("");
     }
 }

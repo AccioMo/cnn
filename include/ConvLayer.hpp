@@ -4,7 +4,6 @@
 
 class BaseLayer;
 
-# include "utils.hpp"
 # include "convolution.hpp"
 # include "BaseLayer.hpp"
 

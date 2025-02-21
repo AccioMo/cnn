@@ -7,7 +7,7 @@
 	"conv_layers": [
 		{
 			"filters": 9,
-			"kernel_size": 7,
+			"kernel_size": 5,
 			"stride": 1,
 			"padding": "0",
 			"activation": "relu"
@@ -41,7 +41,7 @@
 		"units": 10,
 		"activation": "softmax"
 	},
-	"epochs": 10,
+	"epochs": 20,
 	"batch_size": 128,
 	"learning_rate": 0.001,
 	"l2_reg": 0.0001

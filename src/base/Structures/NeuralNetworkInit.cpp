@@ -23,19 +23,19 @@ NeuralNetwork::NeuralNetwork( std::vector<int> nodes,
 	this->output_layer = OutputLayer(nodes[_size - 2], nodes[_size - 1]);
 }
 
-NeuralNetwork::NeuralNetwork( std::vector<HiddenLayer> hidden_layers,
-							OutputLayer output_layer,
+NeuralNetwork::NeuralNetwork( std::vector<HiddenLayer> init_hidden_layers,
+							OutputLayer init_output_layer,
 							double learning_rate,
 							double l2_lambda,
 							double beta1,
 							double beta2 )
-	: _size(hidden_layers.size() + 2),
+	: _size(init_hidden_layers.size() + 2),
 	_learning_rate(learning_rate),
 	_l2_lambda(l2_lambda),
 	_beta1(beta1),
 	_beta2(beta2),
-	hidden_layers(hidden_layers),
-	output_layer(output_layer) { }
+	hidden_layers(init_hidden_layers),
+	output_layer(init_output_layer) { }
 
 NeuralNetwork::NeuralNetwork( const char *filename ) {
 

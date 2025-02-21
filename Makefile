@@ -1,5 +1,5 @@
 CLANG = g++
-FLAGS = -Wall -Wextra -Werror -Wshadow -std=c++11 -flto
+FLAGS = -Wall -Wextra -Werror -Wshadow -std=c++11
 DEBUG_FLAGS = -g -fsanitize=address
 OPTIMIZATION_FLAGS = -O3
 HEADERS = math.hpp utils.hpp convolution.hpp Matrix.hpp \

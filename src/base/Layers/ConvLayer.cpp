@@ -1,5 +1,6 @@
 
 #include "ConvLayer.hpp"
+#include "utils.hpp"
 
 ConvLayer::ConvLayer( int kernel_size, int input_size, int output_size, int stride, int padding )
 	: _stride(stride), _padding(padding) {
@@ -30,6 +31,7 @@ ConvLayer::ConvLayer( int kernel_size, int input_size, int output_size, int stri
 ConvLayer::~ConvLayer() { }
 
 Tensor4D	&ConvLayer::feedforward( const Tensor4D &prev_outputs ) {
+	static int round = 0;
 	this->_z = convolve(prev_outputs, this->_kernel, this->_stride, this->_padding);
 	/* `_z` is the convoluted output, feature map, 
 	which i will pass through a max pooling or 
@@ -37,16 +39,39 @@ Tensor4D	&ConvLayer::feedforward( const Tensor4D &prev_outputs ) {
 	params the network has to process */
 
 	int batch_size = this->_z.dimension(0);
-	int	d1 = this->_z.dimension(1);
-	int	d2 = this->_z.dimension(2);
-	Eigen::array<long, 4>	dims = {batch_size, d1, d2, 1};
+	int	width = this->_z.dimension(1);
+	int	height = this->_z.dimension(2);
+	int	channels = this->_z.dimension(3);
+	Eigen::array<long, 4>	dims = {batch_size, width, height, 1};
 	Tensor4D	bias = this->_bias.broadcast(dims);
 	this->_z = this->_z + bias;
 
 	this->_a = ReLU(this->_z);
-	for (int i = 0; i < this->_a.dimension(3); i++) {
-		write_image("conv_layer.png", this->_a.dimension(1), this->_a.dimension(2), 1, this->_a.data());
+
+	int	og_width = prev_outputs.dimension(1);
+	int	og_height = prev_outputs.dimension(2);
+	std::vector<char> og_data(og_width * og_height);
+	for (int y = 0; y < og_height; ++y) {
+		for (int x = 0; x < og_width; ++x) {
+			og_data[y * og_width + x] = static_cast<char>(prev_outputs(0, y, x, 0) * 255.0f);
+		}
 	}
+	std::string og_filename = "outputs/original.png";
+	write_image(og_filename.c_str(), og_width, og_height, 1, og_data.data());
+
+	for (int c = 0; c < channels; ++c) {
+		std::vector<char> channel_data(width * height);
+		for (int y = 0; y < height; ++y) {
+			for (int x = 0; x < width; ++x) {
+				channel_data[y * width + x] = static_cast<char>(this->_a(0, y, x, c) * 255.0f);
+			}
+		}
+
+		std::string channel_filename = "outputs/" + std::to_string(round % 3) + "-channel_" + std::to_string(c) + ".png";
+		write_image(channel_filename.c_str(), width, height, 1, channel_data.data());
+	}
+	round++;
+	
 	/* TODO: 
 		this->_a = pooling(this->_a, "max");
 		add average pooling function 
