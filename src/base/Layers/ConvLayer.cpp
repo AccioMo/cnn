@@ -36,7 +36,17 @@ Tensor4D	&ConvLayer::feedforward( const Tensor4D &prev_outputs ) {
 	average pooling to decrease the amount of 
 	params the network has to process */
 
+	int batch_size = this->_z.dimension(0);
+	int	d1 = this->_z.dimension(1);
+	int	d2 = this->_z.dimension(2);
+	Eigen::array<long, 4>	dims = {batch_size, d1, d2, 1};
+	Tensor4D	bias = this->_bias.broadcast(dims);
+	this->_z = this->_z + bias;
+
 	this->_a = ReLU(this->_z);
+	for (int i = 0; i < this->_a.dimension(3); i++) {
+		write_image("conv_layer.png", this->_a.dimension(1), this->_a.dimension(2), 1, this->_a.data());
+	}
 	/* TODO: 
 		this->_a = pooling(this->_a, "max");
 		add average pooling function 
@@ -50,7 +60,8 @@ void	ConvLayer::backpropagation( const BaseLayer &next_layer ) {
 		which connects directly to a fully 
 		connected layer, takes a Matrix 
 		backpropagated error, calculates 
-		its own error, and unflattens it.
+		its own error, and unflattens it
+		into a 4D Tensor.
 	*/
 	Matrix	output = flatten(this->_z);
 	Matrix	flat_error = next_layer.getError().dot(next_layer.getWeight().transpose()).hadamard_product(ReLU_derivative(output));
@@ -76,19 +87,18 @@ void	ConvLayer::backpropagation( const ConvLayer &next_layer ) {
 }
 
 void	ConvLayer::update( const Tensor4D &inputs, 
-							  float learning_rate, 
-							  int timestep, 
-							  float l2_reg, 
-							  float beta1, 
-							  float beta2 ) {
-
+							float learning_rate, 
+							int timestep, 
+							float l2_reg, 
+							float beta1, 
+							float beta2 ) {
 
 	this->_gradient = gradient_convolve(inputs, this->_error, this->_stride, this->_padding);
-
 	(void)beta1;
 	(void)beta2;
 	(void)timestep;
 	(void)l2_reg;
+
 	/* ------------------------------------------------------------------- 
 	Tensor4D	kernel_gradient = this->_gradient + (this->_kernel * l2_reg);
 
@@ -100,14 +110,12 @@ void	ConvLayer::update( const Tensor4D &inputs,
 	this->_gradient = m_hat / v_hat.sqrt() + 1e-8;
 	 ------------------------------------------------------------------- */
 
-	// std::cout << "error: " << this->_error << std::endl;
-	// std::cout << "output: " << this->_a << std::endl;
-	// std::cout << "conv gradient: " << this->_gradient << std::endl;
-	// std::cout << "kernel 1: " << this->_kernel << std::endl;
 	this->_kernel = this->_kernel - (this->_gradient * learning_rate);
-	// std::cout << "kernel 2: " << this->_kernel << std::endl;
-	// std::cout << this->_bias.dimensions() << std::endl;
-	// this->_bias = this->_bias - (bias_gradient * (float)learning_rate);
+
+	Eigen::array<int, 3> sum_dims = {0, 1, 2};
+	Eigen::array<long, 4>	dims = {1, 1, 1, this->_bias.dimension(3)};
+	Tensor4D	bias_gradient = this->_error.sum(sum_dims).reshape(dims);
+	this->_bias = this->_bias - (bias_gradient * (float)learning_rate);
 }
 
 Tensor4D	ConvLayer::getKernel( void ) const {

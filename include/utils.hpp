@@ -6,8 +6,8 @@
 # include <fstream>
 
 # include "config.hpp"
+# include "convolution.hpp"
 # include "Matrix.hpp"
-# include "ConvLayer.hpp"
 
 double						ft_get_time(void);
 std::vector<Tensor4D>		get_mnist_batch( const char *filename );

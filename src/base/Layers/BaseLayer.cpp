@@ -26,7 +26,7 @@ void	BaseLayer::update( const Matrix &inputs,
 	(void)beta2;
 	(void)timestep;
 	(void)l2_reg;
-	/* ------------------------------------------------------------------- 
+	/* ------------------------------------------------------------------- */
 	Matrix	weight_gradient = this->_gradient + (this->_weight * l2_reg);
 
 	this->_m = this->_m * beta1 + weight_gradient * (1.0 - beta1);
@@ -35,7 +35,7 @@ void	BaseLayer::update( const Matrix &inputs,
 	Matrix	m_hat = this->_m / (1.0 - std::pow(beta1, timestep));
 	Matrix	v_hat = this->_v / (1.0 - std::pow(beta2, timestep));
 	this->_gradient = m_hat / v_hat.sqrt() + 1e-8;
-	 ------------------------------------------------------------------- */
+	/* ------------------------------------------------------------------- */
 
 	// std::cout << "error: " << this->_error << std::endl;
 	// std::cout << "gradient: " << this->_gradient << std::endl;

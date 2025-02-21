@@ -17,8 +17,8 @@ Tensor4D convolve(const Tensor4D &input, const Tensor4D &kernel, int stride, int
 	
 	}
 
-    int output_height = floor(double(input_height + 2*padding - kernel_height) / double(stride)) + 1;
-    int output_width = floor(double(input_width + 2*padding - kernel_width) / double(stride)) + 1;
+    int output_height = (input_height + 2*padding - kernel_height) / stride + 1;
+    int output_width = (input_width + 2*padding - kernel_width) / stride + 1;
     
     Tensor4D output(batch_size, output_height, output_width, output_channels);
 

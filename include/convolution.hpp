@@ -6,6 +6,7 @@
 # include "unsupported/Eigen/CXX11/Tensor"
 
 typedef Eigen::Tensor<float, 4>	Tensor4D;
+typedef Eigen::Tensor<float, 1>	Tensor1D;
 
 # include "Matrix.hpp"
 # include "math.hpp"
