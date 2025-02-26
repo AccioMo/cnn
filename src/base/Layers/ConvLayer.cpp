@@ -75,7 +75,6 @@ Tensor4D	&ConvLayer::feedforward( const Tensor4D &prev_outputs ) {
 		write_image(channel_filename.c_str(), width, height, 1, channel_data.data());
 	}
 	round++;
-	exit(0);
 
 	return (this->_a);
 }
