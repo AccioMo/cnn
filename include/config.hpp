@@ -2,7 +2,7 @@
 #ifndef CONFIG_HPP
 # define CONFIG_HPP
 
-const int EPOCHS = 20;
+const int EPOCHS = 10;
 const int IMAGE_SIZE = 28 * 28;
 const int POSSIBILE_OUTPUTS = 10;
 

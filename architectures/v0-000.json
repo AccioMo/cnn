@@ -9,21 +9,21 @@
 			"filters": 9,
 			"kernel_size": 5,
 			"stride": 1,
-			"padding": "0",
+			"padding": "same",
 			"activation": "relu"
 		},
 		{
 			"filters": 12,
-			"kernel_size": 5,
+			"kernel_size": 3,
 			"stride": 1,
-			"padding": "0",
+			"padding": "same",
 			"activation": "relu"
 		},
 		{
 			"filters": 15,
-			"kernel_size": 3,
+			"kernel_size": 1,
 			"stride": 1,
-			"padding": "0",
+			"padding": "same",
 			"activation": "relu"
 		}
 	],
@@ -41,8 +41,8 @@
 		"units": 10,
 		"activation": "softmax"
 	},
-	"epochs": 20,
+	"epochs": 10,
 	"batch_size": 128,
 	"learning_rate": 0.001,
-	"l2_reg": 0.0001
+	"l2_reg": 0.00001
 }

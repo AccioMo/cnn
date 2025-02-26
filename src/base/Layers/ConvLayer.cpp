@@ -41,12 +41,15 @@ Tensor4D	&ConvLayer::feedforward( const Tensor4D &prev_outputs ) {
 	int batch_size = this->_z.dimension(0);
 	int	width = this->_z.dimension(1);
 	int	height = this->_z.dimension(2);
-	int	channels = this->_z.dimension(3);
 	Eigen::array<long, 4>	dims = {batch_size, width, height, 1};
 	Tensor4D	bias = this->_bias.broadcast(dims);
 	this->_z = this->_z + bias;
 
 	this->_a = ReLU(this->_z);
+	this->_a = max_pooling(this->_a, 2);
+
+	width = this->_a.dimension(1);
+	height = this->_a.dimension(2);
 
 	int	og_width = prev_outputs.dimension(1);
 	int	og_height = prev_outputs.dimension(2);
@@ -59,6 +62,7 @@ Tensor4D	&ConvLayer::feedforward( const Tensor4D &prev_outputs ) {
 	std::string og_filename = "outputs/original.png";
 	write_image(og_filename.c_str(), og_width, og_height, 1, og_data.data());
 
+	int	channels = this->_a.dimension(3);
 	for (int c = 0; c < channels; ++c) {
 		std::vector<char> channel_data(width * height);
 		for (int y = 0; y < height; ++y) {
@@ -71,11 +75,8 @@ Tensor4D	&ConvLayer::feedforward( const Tensor4D &prev_outputs ) {
 		write_image(channel_filename.c_str(), width, height, 1, channel_data.data());
 	}
 	round++;
-	
-	/* TODO: 
-		this->_a = pooling(this->_a, "max");
-		add average pooling function 
-		and simple way to choose one */
+	exit(0);
+
 	return (this->_a);
 }
 
@@ -88,13 +89,14 @@ void	ConvLayer::backpropagation( const BaseLayer &next_layer ) {
 		its own error, and unflattens it
 		into a 4D Tensor.
 	*/
-	Matrix	output = flatten(this->_z);
-	Matrix	flat_error = next_layer.getError().dot(next_layer.getWeight().transpose()).hadamard_product(ReLU_derivative(output));
+	Matrix	flat_error = next_layer.getError().dot(next_layer.getWeight().transpose());
 	int d1 = this->getOutput().dimension(0);
 	int d2 = this->getOutput().dimension(1);
 	int d3 = this->getOutput().dimension(2);
 	int d4 = this->getOutput().dimension(3);
-	this->_error = unflatten(flat_error, d1, d2, d3, d4);
+	Tensor4D error = unflatten(flat_error, d1, d2, d3, d4);
+	error = upsample(error, this->_z, 2);
+	this->_error = error * ReLU_derivative(this->_z);
 }
 
 void	ConvLayer::backpropagation( const ConvLayer &next_layer ) {
@@ -108,7 +110,10 @@ void	ConvLayer::backpropagation( const ConvLayer &next_layer ) {
 		derivative of the activation function, and `z` is
 		the pre-activation output of the current layer.
 	*/
-	this->_error = rev_convolve(next_layer.getError(), flip(next_layer.getKernel()), next_layer.getStride(), next_layer.getPadding()) * ReLU_derivative(this->_z);
+	this->_error = rev_convolve(next_layer.getError(), flip(next_layer.getKernel()), \
+		next_layer.getStride(), next_layer.getPadding());
+	Tensor4D	error = upsample(this->_error, this->_z, 2);
+	this->_error = error * ReLU_derivative(this->_z);
 }
 
 void	ConvLayer::update( const Tensor4D &inputs, 
@@ -119,6 +124,8 @@ void	ConvLayer::update( const Tensor4D &inputs,
 							float beta2 ) {
 
 	this->_gradient = gradient_convolve(inputs, this->_error, this->_stride, this->_padding);
+	// std::cout << "kernel: " << this->_kernel << std::endl;
+	// std::cout << "gradient: " << this->_gradient << std::endl;
 	(void)beta1;
 	(void)beta2;
 	(void)timestep;

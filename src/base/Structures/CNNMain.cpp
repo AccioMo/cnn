@@ -2,6 +2,7 @@
 #include "CNN.hpp"
 
 void	CNN::feedforward( const Tensor4D &inputs ) {
+	// double start = ft_get_time();
 	Tensor4D	filter_outputs = inputs;
 	for (auto &layer : conv_layers) {
 		filter_outputs = layer.feedforward(filter_outputs);
@@ -11,9 +12,11 @@ void	CNN::feedforward( const Tensor4D &inputs ) {
 		outputs = layer.feedforward(outputs);
 	}
 	output_layer.feedforward(outputs);
+	// std::cout << "feedforward time	: " << (ft_get_time() - start) / 1000 << "s" << std::endl;
 }
 
 void	CNN::backpropagation( const Matrix &expected_outputs ) {
+	// double start = ft_get_time();
 	BaseLayer	*next_layer = &output_layer;
 	output_layer.backpropagation(expected_outputs);
 	for (int i = hidden_layers.size() - 1; i >= 0; i--) {
@@ -27,9 +30,11 @@ void	CNN::backpropagation( const Matrix &expected_outputs ) {
 		this->conv_layers[i].backpropagation(*next_conv_layer);
 		next_conv_layer = &this->conv_layers[i];
 	}
+	// std::cout << "backpropagation time	: " << (ft_get_time() - start) / 1000 << "s" << std::endl;
 }
 
 void	CNN::update( const Tensor4D &inputs, int timestep ) {
+	// double start = ft_get_time();
 	Tensor4D	outputs = inputs;
 	for (auto &layer : conv_layers) {
 		layer.update(outputs, this->_learning_rate, timestep, \
@@ -44,6 +49,7 @@ void	CNN::update( const Tensor4D &inputs, int timestep ) {
 	}
 	output_layer.update(flat_outputs, this->_learning_rate, timestep, \
 		this->_l2_lambda, this->_beta1, this->_beta2);
+	// std::cout << "update time		: " << (ft_get_time() - start) / 1000 << "s" << std::endl;
 }
 
 void	CNN::train( const Tensor4D &input_batch, Matrix &output_batch, int epochs, int timestep ) {

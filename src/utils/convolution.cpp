@@ -1,6 +1,11 @@
 
 # include "convolution.hpp"
 
+#include <iostream>
+#include <array>
+#include <thread>
+#include <vector>
+
 Tensor4D convolve(const Tensor4D &input, const Tensor4D &kernel, int stride, int padding) {
     int batch_size = input.dimension(0);
     int input_height = input.dimension(1);
@@ -11,10 +16,8 @@ Tensor4D convolve(const Tensor4D &input, const Tensor4D &kernel, int stride, int
     int kernel_width = kernel.dimension(1);
     int output_channels = kernel.dimension(3);
 
-	if (kernel_width != kernel_height) {
-		std::cerr << "kernel dimensions wrong" << std::endl;
-		exit(1);
-	
+	if (kernel.dimension(2) != channels) {
+		throw std::invalid_argument("kernel channels must match input channels");
 	}
 
     int output_height = (input_height + 2*padding - kernel_height) / stride + 1;
@@ -23,33 +26,48 @@ Tensor4D convolve(const Tensor4D &input, const Tensor4D &kernel, int stride, int
     Tensor4D output(batch_size, output_height, output_width, output_channels);
 
     Tensor4D padded_input;
-	std::array<std::pair<int, int>, 4> paddings = {
-		std::make_pair(0, 0),
-		std::make_pair(0, 0),
-		std::make_pair(padding, padding),
-		std::make_pair(padding, padding)
-	};
-	padded_input = input.pad(paddings);
-    
-    for (int b = 0; b < batch_size; ++b) {
-        for (int oc = 0; oc < output_channels; ++oc) {
-            for (int oh = 0; oh < output_height; ++oh) {
-                for (int ow = 0; ow < output_width; ++ow) {
-                    float sum = 0;
-                    for (int c = 0; c < channels; ++c) {
-                        for (int kh = 0; kh < kernel_height; ++kh) {
-                            for (int kw = 0; kw < kernel_width; ++kw) {
-                                int ih = oh * stride + kh;
-                                int iw = ow * stride + kw;
-                                sum += padded_input(b, ih, iw, c) * 
-                                      kernel(kh, kw, c, oc);
+    std::array<std::pair<int, int>, 4> paddings = {
+        std::make_pair(0, 0),
+        std::make_pair(padding, padding),
+        std::make_pair(padding, padding),
+        std::make_pair(0, 0)
+    };
+    padded_input = input.pad(paddings);
+
+    auto convolve_batch = [&](int start_b, int end_b) {
+        for (int b = start_b; b < end_b; ++b) {
+            for (int oc = 0; oc < output_channels; ++oc) {
+                for (int oh = 0; oh < output_height; ++oh) {
+                    for (int ow = 0; ow < output_width; ++ow) {
+                        float sum = 0;
+                        for (int c = 0; c < channels; ++c) {
+                            for (int kh = 0; kh < kernel_height; ++kh) {
+                                for (int kw = 0; kw < kernel_width; ++kw) {
+                                    int ih = oh * stride + kh;
+                                    int iw = ow * stride + kw;
+                                    sum += padded_input(b, ih, iw, c) * 
+                                           kernel(kh, kw, c, oc);
+                                }
                             }
                         }
+                        output(b, oh, ow, oc) = sum;
                     }
-                    output(b, oh, ow, oc) = sum;
                 }
             }
         }
+    };
+
+    int num_threads = std::thread::hardware_concurrency();
+    std::vector<std::thread> threads;
+    int batch_per_thread = batch_size / num_threads;
+    for (int i = 0; i < num_threads; ++i) {
+        int start_b = i * batch_per_thread;
+        int end_b = (i == num_threads - 1) ? batch_size : start_b + batch_per_thread;
+        threads.emplace_back(convolve_batch, start_b, end_b);
+    }
+
+    for (auto &t : threads) {
+        t.join();
     }
 
     return (output);
@@ -71,24 +89,39 @@ Tensor4D rev_convolve(const Tensor4D &error, const Tensor4D &kernel, int stride,
     Tensor4D propagated_error(batch_size, input_height, input_width, input_channels);
 	propagated_error.setZero();
 
-    for (int b = 0; b < batch_size; ++b) {
-        for (int oc = 0; oc < output_channels; ++oc) {
-            for (int eh = 0; eh < error_height; ++eh) {
-                for (int ew = 0; ew < error_width; ++ew) {
-                    for (int kh = 0; kh < kernel_height; ++kh) {
-                        for (int kw = 0; kw < kernel_width; ++kw) {
-                            int ih = eh * stride + kh - padding;
-                            int iw = ew * stride + kw - padding;
-                            if (ih >= 0 && ih < input_height && iw >= 0 && iw < input_width) {
-                                for (int ic = 0; ic < input_channels; ++ic) {
-                                    propagated_error(b, ih, iw, ic) += error(b, eh, ew, oc) * kernel(kh, kw, ic, oc);
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
+    auto convolve_batch = [&](int start_b, int end_b) {
+        for (int b = start_b; b < end_b; ++b) {
+			for (int oc = 0; oc < output_channels; ++oc) {
+				for (int eh = 0; eh < error_height; ++eh) {
+					for (int ew = 0; ew < error_width; ++ew) {
+						for (int kh = 0; kh < kernel_height; ++kh) {
+							for (int kw = 0; kw < kernel_width; ++kw) {
+								int ih = eh * stride + kh - padding;
+								int iw = ew * stride + kw - padding;
+								if (ih >= 0 && ih < input_height && iw >= 0 && iw < input_width) {
+									for (int ic = 0; ic < input_channels; ++ic) {
+										propagated_error(b, ih, iw, ic) += error(b, eh, ew, oc) * kernel(kh, kw, ic, oc);
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	};
+
+	int num_threads = std::thread::hardware_concurrency();
+    std::vector<std::thread> threads;
+    int batch_per_thread = batch_size / num_threads;
+    for (int i = 0; i < num_threads; ++i) {
+        int start_b = i * batch_per_thread;
+        int end_b = (i == num_threads - 1) ? batch_size : start_b + batch_per_thread;
+        threads.emplace_back(convolve_batch, start_b, end_b);
+    }
+
+    for (auto &t : threads) {
+        t.join();
     }
 
     return (propagated_error);
@@ -104,55 +137,128 @@ Tensor4D gradient_convolve(const Tensor4D &input, const Tensor4D &error, int str
     int error_width = error.dimension(2);
     int output_channels = error.dimension(3);
 
-    int kernel_height = input_height - (error_height - 1) * stride + 2 * padding;
-    int kernel_width = input_width - (error_width - 1) * stride + 2 * padding;
+    int kernel_height = (input_height + 2 * padding - (error_height - 1) * stride);
+    int kernel_width = (input_width + 2 * padding - (error_width - 1) * stride);
 
     Tensor4D grad_kernel(kernel_height, kernel_width, input_channels, output_channels);
-	grad_kernel.setZero();
+    grad_kernel.setZero();
 
-    for (int b = 0; b < batch_size; ++b) {
-        for (int ic = 0; ic < input_channels; ++ic) {
-            for (int oc = 0; oc < output_channels; ++oc) {
-                for (int kh = 0; kh < kernel_height; ++kh) {
-                    for (int kw = 0; kw < kernel_width; ++kw) {
-                        float sum = 0;
-                        for (int eh = 0; eh < error_height; ++eh) {
-                            for (int ew = 0; ew < error_width; ++ew) {
-                                int ih = eh * stride + kh - padding;
-                                int iw = ew * stride + kw - padding;
-                                if (ih >= 0 && ih < input_height && iw >= 0 && iw < input_width) {
-                                    sum += input(b, ih, iw, ic) * error(b, eh, ew, oc);
+    auto convolve_batch = [&](int start_b, int end_b) {
+        Tensor4D local_grad(kernel_height, kernel_width, input_channels, output_channels);
+        local_grad.setZero();
+
+        for (int b = start_b; b < end_b; ++b) {
+            for (int ic = 0; ic < input_channels; ++ic) {
+                for (int oc = 0; oc < output_channels; ++oc) {
+                    for (int kh = 0; kh < kernel_height; ++kh) {
+                        for (int kw = 0; kw < kernel_width; ++kw) {
+                            float sum = 0;
+                            for (int eh = 0; eh < error_height; ++eh) {
+                                for (int ew = 0; ew < error_width; ++ew) {
+                                    int ih = eh * stride + kh - padding;
+                                    int iw = ew * stride + kw - padding;
+                                    if (ih >= 0 && ih < input_height && iw >= 0 && iw < input_width) {
+                                        sum += input(b, ih, iw, ic) * error(b, eh, ew, oc);
+                                    }
                                 }
                             }
+                            local_grad(kh, kw, ic, oc) += sum;
                         }
-                        grad_kernel(kh, kw, ic, oc) += sum;
                     }
                 }
             }
         }
+
+        grad_kernel += local_grad;
+    };
+
+    int num_threads = std::min(batch_size, (int)std::thread::hardware_concurrency());
+    std::vector<std::thread> threads;
+    int batch_per_thread = batch_size / num_threads;
+    
+    for (int i = 0; i < num_threads; ++i) {
+        int start_b = i * batch_per_thread;
+        int end_b = (i == num_threads - 1) ? batch_size : start_b + batch_per_thread;
+        threads.emplace_back(convolve_batch, start_b, end_b);
     }
 
-	grad_kernel = grad_kernel / (float)batch_size;
+    for (auto &t : threads) {
+        t.join();
+    }
 
+    grad_kernel = grad_kernel / (float)batch_size;
     return (grad_kernel);
 }
 
-Matrix	gaussian_blur(int size, double sigma) {
-	Matrix	kernel(size, size);
-	int		center = size / 2;
-	double	sum = 0;
-	/*
-		equation for Gaussian function in 2 dimentions:
-		G(x, y) => ( 1 / (2*PI*SIGMA^2) ) * exp(-(x^2 + y^2) / 2*SIGMA^2)
-		src: https://www.w3.org/Talks/2012/0125-HTML-Tehran/Gaussian.xhtml
-	*/
-	for (int y = 0; y < size; y++) {
-		for (int x = 0; x < size; x++) {
-			double	exponent = -((x-center)*(x-center)+(y-center)*(y-center)) / (2.0*sigma*sigma);
-			kernel.m[y][x] = (1.0/(2.0*M_PI*sigma*sigma)) * exp(exponent);
-			sum += kernel.m[y][x];
-		}
-	}
 
-	return (kernel / sum);
+Tensor4D	max_pooling(const Tensor4D &input, int pool_size) {
+	int stride_height = 2;
+	int stride_width = 2;
+
+    int batchSize = input.dimension(0);
+    int inputHeight = input.dimension(1);
+    int inputWidth = input.dimension(2);
+    int channels = input.dimension(3);
+
+    int outputHeight = (inputHeight - pool_size) / stride_height + 1;
+    int outputWidth = (inputWidth - pool_size) / stride_width + 1;
+
+    Tensor4D	output(batchSize, outputHeight, outputWidth, channels);
+
+    for (int h = 0; h < outputHeight; ++h) {
+        for (int w = 0; w < outputWidth; ++w) {
+            int hStart = h * stride_height;
+            int wStart = w * stride_width;
+
+            Eigen::DSizes<Eigen::Index, 4> start{0, hStart, wStart, 0};
+			Eigen::DSizes<Eigen::Index, 4> size{batchSize, pool_size, pool_size, channels};
+
+			Tensor4D window = input.slice(start, size).eval();
+
+            Eigen::Tensor<float, 2> maxValues = window.maximum(Eigen::array<int, 2>{1, 2});
+
+            output.slice(
+                Eigen::array<int, 4>{0, h, w, 0},
+                Eigen::array<int, 4>{batchSize, 1, 1, channels}
+            ) = maxValues.reshape(Eigen::array<int, 4>{batchSize, 1, 1, channels});
+        }
+    }
+
+    return (output);
+}
+
+Tensor4D	upsample(const Tensor4D &pooled, const Tensor4D &input, int pool_size) {
+	int stride = 2;
+
+    Tensor4D	upsampled = Tensor4D(input.dimensions());
+	upsampled.setZero();
+    for (int n = 0; n < input.dimension(0); ++n) {
+        for (int c = 0; c < input.dimension(3); ++c) {
+            for (int h = 0; h < pooled.dimension(1); ++h) {
+                for (int w = 0; w < pooled.dimension(2); ++w) {
+                    
+                    int h_start = h * stride;
+                    int w_start = w * stride;
+                    int h_end = fmin(h_start + pool_size, input.dimension(1));
+                    int w_end = fmin(w_start + pool_size, input.dimension(2));
+
+                    float max_val = -std::numeric_limits<float>::infinity();
+                    int max_h = h_start, max_w = w_start;
+
+                    for (int i = h_start; i < h_end; ++i) {
+                        for (int j = w_start; j < w_end; ++j) {
+                            if (input(n, i, j, c) > max_val) {
+                                max_val = input(n, i, j, c);
+                                max_h = i;
+                                max_w = j;
+                            }
+                        }
+                    }
+
+                    upsampled(n, max_h, max_w, c) += pooled(n, h, w, c);
+                }
+            }
+        }
+    }
+    return (upsampled);
 }

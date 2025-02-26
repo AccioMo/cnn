@@ -23,6 +23,8 @@ CNN::CNN( nlohmann::json arch ) : NeuralNetwork() {
 		}
 		input_width = (input_width - kernel_size + 2*padding) / stride + 1;
 		input_height = (input_height - kernel_size + 2*padding) / stride + 1;
+		input_width = (input_width - 2) / 2 + 1;
+		input_height = (input_height - 2) / 2 + 1;
 		channels = filters;
 		std::cout << "input: " << input_width << "x" << input_height << "x" << channels << std::endl;
 		prev_layer_size = (input_width*input_height*channels);
