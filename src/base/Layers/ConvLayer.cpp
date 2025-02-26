@@ -123,8 +123,6 @@ void	ConvLayer::update( const Tensor4D &inputs,
 							float beta2 ) {
 
 	this->_gradient = gradient_convolve(inputs, this->_error, this->_stride, this->_padding);
-	// std::cout << "kernel: " << this->_kernel << std::endl;
-	// std::cout << "gradient: " << this->_gradient << std::endl;
 	(void)beta1;
 	(void)beta2;
 	(void)timestep;

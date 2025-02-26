@@ -6,21 +6,21 @@
 	},
 	"conv_layers": [
 		{
-			"filters": 9,
+			"filters": 12,
 			"kernel_size": 5,
 			"stride": 1,
 			"padding": "same",
 			"activation": "relu"
 		},
 		{
-			"filters": 12,
+			"filters": 15,
 			"kernel_size": 3,
 			"stride": 1,
 			"padding": "same",
 			"activation": "relu"
 		},
 		{
-			"filters": 15,
+			"filters": 20,
 			"kernel_size": 1,
 			"stride": 1,
 			"padding": "same",
@@ -29,11 +29,11 @@
 	],
 	"hidden_layers": [
 		{
-			"units": 64,
+			"units": 128,
 			"activation": "relu"
 		},
 		{
-			"units": 32,
+			"units": 64,
 			"activation": "relu"
 		}
 	],
@@ -43,6 +43,6 @@
 	},
 	"epochs": 10,
 	"batch_size": 128,
-	"learning_rate": 0.001,
+	"learning_rate": 0.0005,
 	"l2_reg": 0.00001
 }
