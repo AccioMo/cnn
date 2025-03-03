@@ -28,10 +28,11 @@ DEBUG_OBJ_FILES = $(addprefix $(DEBUG_OBJ_DIR), $(FILES:.cpp=_debug.opp))
 NAME_DEBUG = cnn_debug
 NAME = cnn
 
+# ==== RELEASE ==== #
+
 all: FLAGS += $(OPTIMIZATION_FLAGS)
 all: $(OBJ_DIR) $(NAME)
 
-# ==== RELEASE ==== #
 $(OBJ_DIR):
 	@mkdir -p $(OBJ_DIR)
 
@@ -64,7 +65,10 @@ $(DEBUG_OBJ_DIR):
 $(NAME_DEBUG): $(DEBUG_OBJ_FILES) $(INCLUDES)
 	$(CLANG) $(FLAGS) $(DEBUG_OBJ_FILES) -o $(NAME_DEBUG)
 
-$(DEBUG_OBJ_DIR)%_debug.opp: $(BASE_DIR)%.cpp $(INCLUDES)
+$(DEBUG_OBJ_DIR)%_debug.opp: $(STRUCTURE_DIR)%.cpp $(INCLUDES)
+	$(CLANG) $(FLAGS) -I$(INCLUDE_DIR) -c $< -o $@
+
+$(DEBUG_OBJ_DIR)%_debug.opp: $(LAYER_DIR)%.cpp $(INCLUDES)
 	$(CLANG) $(FLAGS) -I$(INCLUDE_DIR) -c $< -o $@
 
 $(DEBUG_OBJ_DIR)%_debug.opp: $(MATH_DIR)%.cpp $(INCLUDES)

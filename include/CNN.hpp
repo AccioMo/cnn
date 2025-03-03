@@ -8,8 +8,8 @@
 
 class CNN : public NeuralNetwork {
 	private:
-		/* for convolutional layers, 
-		weight matrix is the kernel */
+		int	_conv_size;
+		int	_connected_size;
 
 	public:
 		std::vector<ConvLayer>	conv_layers;

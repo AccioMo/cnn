@@ -41,8 +41,8 @@
 		"units": 10,
 		"activation": "softmax"
 	},
-	"epochs": 10,
-	"batch_size": 128,
+	"epochs": 2,
+	"batch_size": 512,
 	"learning_rate": 0.0005,
 	"l2_reg": 0.00001
 }

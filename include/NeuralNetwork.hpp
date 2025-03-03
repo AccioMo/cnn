@@ -14,9 +14,10 @@
 # include "utils.hpp"
 
 class NeuralNetwork {
-	protected:
-
+	private:
 		int		_size;
+
+	protected:
 		int		_epochs;
 		int		_timestep;
 		int 	_batch_size;

@@ -16,11 +16,11 @@ int main( int ac, char **av )
 	config_file >> arch;
 	config_file.close();
 
-	CNN	network(arch);
+	CNN	network("config.bin");
 	std::cout << "network created" << std::endl;
 	network.trainOnFile("mnist/mnist_train_images.bin", 
 						"mnist/mnist_train_labels.bin", 
-						"config.bin");
+						"config-1.bin");
 
 	/*
 	if (ac > 1)
