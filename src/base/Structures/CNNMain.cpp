@@ -163,6 +163,71 @@ Matrix	CNN::runOnImage( const char *filename ) {
 	return (output);
 }
 
+void	CNN::saveConfigBin(const char *filename) const {
+	std::ofstream file(filename, std::ios::binary);
+
+    if (file.is_open()) {
+
+		/* saving sizes */
+		const char *conv_size = reinterpret_cast<const char *>(&this->_conv_size);
+        file.write(conv_size, sizeof(this->_conv_size));
+
+		const char *connected_size = reinterpret_cast<const char *>(&this->_connected_size);
+        file.write(connected_size, sizeof(this->_connected_size));
+
+		/* saving params */
+		const char *learning_rate = reinterpret_cast<const char *>(&this->_learning_rate);
+        file.write(learning_rate, sizeof(this->_learning_rate));
+
+		/* saving convolutional layers */
+		for (const auto &c_layer : this->conv_layers) {
+			int kernel_size = c_layer.getKernel().dimension(0);
+			file.write(reinterpret_cast<const char *>(&kernel_size), sizeof(kernel_size));
+			int input_size = c_layer.getKernel().dimension(2);
+			file.write(reinterpret_cast<const char *>(&input_size), sizeof(input_size));
+			int filter_size = c_layer.getKernel().dimension(3);
+			file.write(reinterpret_cast<const char *>(&filter_size), sizeof(filter_size));
+			/* saving data */
+			const char *kernel_data = reinterpret_cast<const char *>(c_layer.getKernel().data());
+			file.write(kernel_data, c_layer.getKernel().size() * sizeof(float));
+		}
+
+		/* saving hidden layers */
+		int input_size = this->hidden_layers[0].getWeight().rows();
+        const char *input_size_cast = reinterpret_cast<const char *>(&input_size);
+        file.write(input_size_cast, sizeof(input_size));
+
+        for (const auto &layer : this->hidden_layers) {
+			int layer_size = layer.getSize();
+            const char *layer_neurons = reinterpret_cast<const char *>(&layer_size);
+            file.write(layer_neurons, sizeof(layer_size));
+
+			for (int i = 0; i < layer.getWeight().rows(); i++) {
+				const char *row_weights = reinterpret_cast<const char *>(layer.getWeight().m[i].data());
+				file.write(row_weights, layer.getWeight().m[i].size() * sizeof(double));
+			}
+			const char *row_bias = reinterpret_cast<const char *>(layer.getBias().m[0].data());
+			file.write(row_bias, layer.getBias().m[0].size() * sizeof(double));
+        }
+
+		/* saving output layer */
+		int output_size = this->hidden_layers[0].getWeight().rows();
+        const char *output_size_cast = reinterpret_cast<const char *>(&output_size);
+        file.write(output_size_cast, sizeof(output_size));
+
+        for (int i = 0; i < this->output_layer.getWeight().rows(); i++) {
+			const char *row_weights = reinterpret_cast<const char *>(this->output_layer.getWeight().m[i].data());
+			file.write(row_weights, this->output_layer.getWeight().m[i].size() * sizeof(double));
+		}
+		const char *bias_data = reinterpret_cast<const char *>(this->output_layer.getBias().m[0].data());
+		file.write(bias_data, this->output_layer.getBias().m[0].size() * sizeof(double));
+
+        file.close();
+    } else {
+        std::cerr << "Error opening file: " << filename;
+    }
+}
+
 void	CNN::printData( const Matrix &expected_outputs ) const {
 	double max_entropy = -std::log(1.0 / (double)POSSIBILE_OUTPUTS);
 	std::cout << "accuracy (end)\t: " << this->calculateAccuracy(expected_outputs).mean() * 100 << "%" << std::endl;

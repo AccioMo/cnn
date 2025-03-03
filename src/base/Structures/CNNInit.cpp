@@ -67,71 +67,83 @@ CNN::CNN( std::vector<ConvLayer> init_conv_layers,
 
 CNN::CNN( const char *filename ) {
 
-	std::cout << "loading network from file: " << filename << std::endl;
+	std::cout << "Loading network from " << filename << "..." << std::endl;
 	std::streamsize size = get_file_size(filename);
-	std::vector<unsigned char> mnist_train_images = read_binary_file(filename, (size_t)size);
+	std::vector<unsigned char> net_config = read_binary_file(filename, (size_t)size);
 	
 	int	i = 0;
 	
-	std::memcpy(&this->_size, &mnist_train_images[i], sizeof(int));
+	/* retrieving sizes */
+	std::memcpy(&this->_conv_size, &net_config[i], sizeof(int));
 	i += sizeof(int);
-	std::memcpy(&this->_learning_rate, &mnist_train_images[i], sizeof(double));
-	i += sizeof(double);
+	std::memcpy(&this->_connected_size, &net_config[i], sizeof(int));
+	i += sizeof(int);
 
-	int	*config_nodes = new int[this->_size];
-	for (int j = 0; j < this->_size; j++) {
-		std::memcpy(&config_nodes[j], &mnist_train_images[i], sizeof(int));
+	/* retrieving params */
+	std::memcpy(&this->_learning_rate, &net_config[i], sizeof(float));
+	i += sizeof(float);
+
+	/* retrieving convolutional layers */
+	for (int j = 0; j < this->_conv_size; j++) {
+		int kernel_size, kernel_input, kernel_filters;
+		char *kernel_data;
+		std::memcpy(&kernel_size, &net_config[i], sizeof(int));
 		i += sizeof(int);
+		std::memcpy(&kernel_input, &net_config[i], sizeof(int));
+		i += sizeof(int);
+		std::memcpy(&kernel_filters, &net_config[i], sizeof(int));
+		i += sizeof(int);
+		int total_size = kernel_size*kernel_size*kernel_input*kernel_filters;
+		std::memcpy(&kernel_data, &net_config[i], total_size*sizeof(float));
+		i += total_size*sizeof(float);
 	}
 
-	for (int k = 0; k < this->_size - 2; k++) {
-
-		int		neurons = config_nodes[k + 1];
-
-		Matrix	weight = Matrix(config_nodes[k], neurons);
-		for (int j = 0; j < config_nodes[k]; j++) {
-			for (int l = 0; l < neurons; l++) {
-				std::memcpy(&weight.m[j][l], &mnist_train_images[i], sizeof(double));
-				i += sizeof(double);
-			}
+	/* retrieving hidden layers */
+	int input_size;
+	std::memcpy(&input_size, &net_config[i], sizeof(int));
+	i += sizeof(int);
+	for (int j = 0; j < this->_connected_size - 1; j++) {
+		int output_size;
+		std::memcpy(&output_size, &net_config[i], sizeof(int));
+		i += sizeof(int);
+		
+		Matrix	weight(input_size, output_size);
+		for (int k = 0; k < input_size; k++) {
+			std::memcpy(weight.m[k].data(), &net_config[i], output_size*sizeof(double));
+			i += output_size*sizeof(double);
 		}
-		Matrix	bias = Matrix(1, neurons);
+		
+		Matrix	bias = Matrix(1, output_size);
+		std::memcpy(bias.m[0].data(), &net_config[i], output_size*sizeof(double));
+		i += output_size*sizeof(double);
 
-		for (int j = 0; j < neurons; j++) {
-			std::memcpy(&bias.m[0][j], &mnist_train_images[i], sizeof(double));
-			i += sizeof(double);
-		}
-
-		HiddenLayer	hidden_layer(config_nodes[k], neurons);
+		HiddenLayer	hidden_layer(input_size, output_size);
 		hidden_layer.setWeight(weight);
 		hidden_layer.setBias(bias);
-		hidden_layer.setSize(neurons);
 		this->hidden_layers.push_back(hidden_layer);
+
+		input_size = output_size;
 	}
 
-	int		neurons = config_nodes[this->_size - 1];
+	/* retrieving output layer */
+	int output_size;
+	std::memcpy(&output_size, &net_config[i], sizeof(int));
+	i += sizeof(int);
 
-	Matrix	weight = Matrix(config_nodes[this->_size - 2], neurons);
-
-	for (int j = 0; j < config_nodes[this->_size - 2]; j++) {
-		for (int l = 0; l < neurons; l++) {
-			std::memcpy(&weight.m[j][l], &mnist_train_images[i], sizeof(double));
-			i += sizeof(double);
-		}
+	Matrix	weight(input_size, output_size);
+	for (int k = 0; k < input_size; k++) {
+		std::memcpy(weight.m[k].data(), &net_config[i], output_size*sizeof(double));
+		i += output_size*sizeof(double);
 	}
-
-	Matrix	bias = Matrix(1, neurons);
 	
-	for (int j = 0; j < neurons; j++) {
-		std::memcpy(&bias.m[0][j], &mnist_train_images[i], sizeof(double));
-		i += sizeof(double);
-	}
+	Matrix	bias = Matrix(1, output_size);
+	std::memcpy(bias.m[0].data(), &net_config[i], output_size*sizeof(double));
+	i += output_size*sizeof(double);
 
-	OutputLayer	new_output_layer(config_nodes[this->_size - 2], neurons);
-	new_output_layer.setWeight(weight);
-	new_output_layer.setBias(bias);
-	new_output_layer.setSize(neurons);
-	this->output_layer = new_output_layer;
+	OutputLayer	tmp_output_layer(input_size, output_size);
+	tmp_output_layer.setWeight(weight);
+	tmp_output_layer.setBias(bias);
+	this->output_layer = tmp_output_layer;
 }
 
 CNN::~CNN() { }
@@ -141,7 +153,7 @@ void	CNN::saveConfigJson( const char *filename ) const {
     
     if (file.is_open()) {
 		file << "{\n";
-   		file << "\"size\": " << this->_size << "," << std::endl;
+   		file << "\"size\": " << this->_connected_size << "," << std::endl;
 		file << "\"learning_rate\": " << this->_learning_rate << ", " << std::endl;
 		file << "\"layers\": [" << this->hidden_layers[0].getWeight().rows() << ", ";
 		for (auto &layer_neurons : this->hidden_layers)
@@ -167,43 +179,5 @@ void	CNN::saveConfigJson( const char *filename ) const {
         file.close();
     } else {
         std::cerr << "Error opening file: " << filename << std::endl;
-    }
-}
-
-void	CNN::saveConfigBin(const char *filename) const {
-	std::ofstream file(filename, std::ios::binary);
-
-    if (file.is_open()) {
-
-        file.write(reinterpret_cast<const char *>(&this->_size), sizeof(this->_size));
-
-        file.write(reinterpret_cast<const char *>(&this->_learning_rate), sizeof(this->_learning_rate));
-
-        int rows = this->hidden_layers[0].getWeight().rows();
-        file.write(reinterpret_cast<const char *>(&rows), sizeof(rows));
-
-        for (const auto &layer : this->hidden_layers) {
-            int size = layer.getSize();
-            file.write(reinterpret_cast<const char *>(&size), sizeof(size));
-        }
-
-        int output_size = this->output_layer.getSize();
-        file.write(reinterpret_cast<const char *>(&output_size), sizeof(output_size));
-
-        for (const auto &layer : this->hidden_layers) {
-			for (int i = 0; i < layer.getWeight().rows(); i++) {
-				file.write(reinterpret_cast<const char *>(layer.getWeight().m[i].data()), layer.getWeight().m[i].size() * sizeof(double));
-			}
-			file.write(reinterpret_cast<const char *>(layer.getBias().m[0].data()), layer.getBias().m[0].size() * sizeof(double));
-        }
-
-        for (int i = 0; i < this->output_layer.getWeight().rows(); i++) {
-			file.write(reinterpret_cast<const char *>(this->output_layer.getWeight().m[i].data()), this->output_layer.getWeight().m[i].size() * sizeof(double));
-		}
-		file.write(reinterpret_cast<const char *>(this->output_layer.getBias().m[0].data()), this->output_layer.getBias().m[0].size() * sizeof(double));
-
-        file.close();
-    } else {
-        std::cerr << "Error opening file: " << filename;
     }
 }

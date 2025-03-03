@@ -21,6 +21,8 @@ void	BaseLayer::update( const Matrix &inputs,
 							  float beta2 ) {
 
 	this->_gradient = inputs.transpose().dot(this->_error);
+	// std::cout << "grad: " << this->_gradient << std::endl;
+	// std::cout << "weights: " << this->_weight << std::endl;
 
 	(void)beta1;
 	(void)beta2;
