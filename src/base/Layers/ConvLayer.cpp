@@ -170,3 +170,7 @@ int			ConvLayer::getStride( void ) const {
 int			ConvLayer::getPadding( void ) const {
 	return (this->_padding);
 }
+
+void		ConvLayer::setKernel(const Tensor4D &tensor) {
+	this->_kernel = tensor;
+}

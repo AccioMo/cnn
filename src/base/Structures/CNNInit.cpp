@@ -2,6 +2,8 @@
 #include "CNN.hpp"
 
 CNN::CNN( nlohmann::json arch ) : NeuralNetwork() {
+	_conv_size = 0;
+	_connected_size = 0;
 	_learning_rate = arch["learning_rate"].get<float>();
 	_l2_lambda = arch["l2_reg"].get<float>();
 	_batch_size = arch["batch_size"].get<int>();
@@ -28,14 +30,17 @@ CNN::CNN( nlohmann::json arch ) : NeuralNetwork() {
 		channels = filters;
 		std::cout << "input: " << input_width << "x" << input_height << "x" << channels << std::endl;
 		prev_layer_size = (input_width*input_height*channels);
+		_conv_size++;
 	}
 	for (auto &layer : arch["hidden_layers"]) {
 		int neurons = layer["units"].get<int>();
 		this->hidden_layers.emplace_back(HiddenLayer(prev_layer_size, neurons));
 		prev_layer_size = neurons;
+		_connected_size++;
 	}
 	int output_size = arch["output_layer"]["units"].get<int>();
 	this->output_layer = OutputLayer(prev_layer_size, output_size);
+	_connected_size++;
 }
 
 CNN::CNN( std::vector<int> input_shape,
@@ -76,6 +81,7 @@ CNN::CNN( const char *filename ) {
 	/* retrieving sizes */
 	std::memcpy(&this->_conv_size, &net_config[i], sizeof(int));
 	i += sizeof(int);
+
 	std::memcpy(&this->_connected_size, &net_config[i], sizeof(int));
 	i += sizeof(int);
 
@@ -83,19 +89,37 @@ CNN::CNN( const char *filename ) {
 	std::memcpy(&this->_learning_rate, &net_config[i], sizeof(float));
 	i += sizeof(float);
 
+	std::memcpy(&this->_epochs, &net_config[i], sizeof(int));
+	i += sizeof(int);
+
+	std::memcpy(&this->_batch_size, &net_config[i], sizeof(int));
+	i += sizeof(int);
+
+	std::memcpy(&this->_l2_lambda, &net_config[i], sizeof(float));
+	i += sizeof(float);
+
 	/* retrieving convolutional layers */
 	for (int j = 0; j < this->_conv_size; j++) {
-		int kernel_size, kernel_input, kernel_filters;
-		char *kernel_data;
+		int kernel_size, input, filters, stride, padding;
 		std::memcpy(&kernel_size, &net_config[i], sizeof(int));
 		i += sizeof(int);
-		std::memcpy(&kernel_input, &net_config[i], sizeof(int));
+		std::memcpy(&input, &net_config[i], sizeof(int));
 		i += sizeof(int);
-		std::memcpy(&kernel_filters, &net_config[i], sizeof(int));
+		std::memcpy(&filters, &net_config[i], sizeof(int));
 		i += sizeof(int);
-		int total_size = kernel_size*kernel_size*kernel_input*kernel_filters;
-		std::memcpy(&kernel_data, &net_config[i], total_size*sizeof(float));
+		std::memcpy(&stride, &net_config[i], sizeof(int));
+		i += sizeof(int);
+		std::memcpy(&padding, &net_config[i], sizeof(int));
+		i += sizeof(int);
+		int total_size = kernel_size*kernel_size*input*filters;
+		char *kernel_data = new char[total_size*sizeof(float)];
+		std::memcpy(kernel_data, &net_config[i], total_size*sizeof(float));
 		i += total_size*sizeof(float);
+		Eigen::TensorMap<Tensor4D> kernel((float *)kernel_data, kernel_size, kernel_size, input, filters);
+		ConvLayer conv_layer(kernel_size, input, filters, stride, padding);
+		conv_layer.setKernel(kernel);
+		this->conv_layers.push_back(conv_layer);
+		delete[] kernel_data;
 	}
 
 	/* retrieving hidden layers */
@@ -136,14 +160,16 @@ CNN::CNN( const char *filename ) {
 		i += output_size*sizeof(double);
 	}
 	
-	Matrix	bias = Matrix(1, output_size);
+	Matrix	bias(1, output_size);
 	std::memcpy(bias.m[0].data(), &net_config[i], output_size*sizeof(double));
 	i += output_size*sizeof(double);
+		std::cout << "i: " << input_size << ", o: " << output_size << std::endl;
 
 	OutputLayer	tmp_output_layer(input_size, output_size);
 	tmp_output_layer.setWeight(weight);
 	tmp_output_layer.setBias(bias);
 	this->output_layer = tmp_output_layer;
+	std::cout << i << std::endl;
 }
 
 CNN::~CNN() { }

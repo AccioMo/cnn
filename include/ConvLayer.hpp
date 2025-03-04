@@ -61,6 +61,8 @@ class ConvLayer {
 		
 		int			getStride( void ) const;
 		int			getPadding( void ) const;
+
+		void	setKernel(const Tensor4D &tensor);
 };
 
 #endif

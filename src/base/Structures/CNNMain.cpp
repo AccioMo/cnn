@@ -179,6 +179,15 @@ void	CNN::saveConfigBin(const char *filename) const {
 		const char *learning_rate = reinterpret_cast<const char *>(&this->_learning_rate);
         file.write(learning_rate, sizeof(this->_learning_rate));
 
+		const char *epochs = reinterpret_cast<const char *>(&this->_epochs);
+        file.write(epochs, sizeof(this->_epochs));
+
+		const char *batch_size = reinterpret_cast<const char *>(&this->_batch_size);
+        file.write(batch_size, sizeof(this->_batch_size));
+
+		const char *l2_lambda = reinterpret_cast<const char *>(&this->_l2_lambda);
+        file.write(l2_lambda, sizeof(this->_l2_lambda));
+
 		/* saving convolutional layers */
 		for (const auto &c_layer : this->conv_layers) {
 			int kernel_size = c_layer.getKernel().dimension(0);
@@ -187,9 +196,15 @@ void	CNN::saveConfigBin(const char *filename) const {
 			file.write(reinterpret_cast<const char *>(&input_size), sizeof(input_size));
 			int filter_size = c_layer.getKernel().dimension(3);
 			file.write(reinterpret_cast<const char *>(&filter_size), sizeof(filter_size));
+			int stride = c_layer.getStride();
+			file.write(reinterpret_cast<const char *>(&stride), sizeof(stride));
+			int padding = c_layer.getPadding();
+			file.write(reinterpret_cast<const char *>(&padding), sizeof(padding));
 			/* saving data */
 			const char *kernel_data = reinterpret_cast<const char *>(c_layer.getKernel().data());
 			file.write(kernel_data, c_layer.getKernel().size() * sizeof(float));
+			// const char *kernel_bias = reinterpret_cast<const char *>(c_layer.getBias().data());
+			// file.write(kernel_bias, c_layer.getBias().size() * sizeof(float));
 		}
 
 		/* saving hidden layers */
@@ -211,7 +226,7 @@ void	CNN::saveConfigBin(const char *filename) const {
         }
 
 		/* saving output layer */
-		int output_size = this->hidden_layers[0].getWeight().rows();
+		int output_size = this->output_layer.getSize();
         const char *output_size_cast = reinterpret_cast<const char *>(&output_size);
         file.write(output_size_cast, sizeof(output_size));
 
