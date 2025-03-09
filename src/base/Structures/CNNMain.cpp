@@ -201,7 +201,8 @@ void	CNN::saveConfigBin(const char *filename) const {
 			int padding = c_layer.getPadding();
 			file.write(reinterpret_cast<const char *>(&padding), sizeof(padding));
 			/* saving data */
-			const char *kernel_data = reinterpret_cast<const char *>(c_layer.getKernel().data());
+			Tensor4D kernel = c_layer.getKernel();
+			const char *kernel_data = reinterpret_cast<const char *>(kernel.data());
 			file.write(kernel_data, c_layer.getKernel().size() * sizeof(float));
 			// const char *kernel_bias = reinterpret_cast<const char *>(c_layer.getBias().data());
 			// file.write(kernel_bias, c_layer.getBias().size() * sizeof(float));
@@ -218,11 +219,13 @@ void	CNN::saveConfigBin(const char *filename) const {
             file.write(layer_neurons, sizeof(layer_size));
 
 			for (int i = 0; i < layer.getWeight().rows(); i++) {
-				const char *row_weights = reinterpret_cast<const char *>(layer.getWeight().m[i].data());
-				file.write(row_weights, layer.getWeight().m[i].size() * sizeof(double));
+				Matrix weights = layer.getWeight();
+				const char *row_weights = reinterpret_cast<const char *>(weights.m[i].data());
+				file.write(row_weights, weights.m[i].size() * sizeof(double));
 			}
-			const char *row_bias = reinterpret_cast<const char *>(layer.getBias().m[0].data());
-			file.write(row_bias, layer.getBias().m[0].size() * sizeof(double));
+			Matrix bias = layer.getBias();
+			const char *row_bias = reinterpret_cast<const char *>(bias.m[0].data());
+			file.write(row_bias, bias.m[0].size() * sizeof(double));
         }
 
 		/* saving output layer */
@@ -231,11 +234,13 @@ void	CNN::saveConfigBin(const char *filename) const {
         file.write(output_size_cast, sizeof(output_size));
 
         for (int i = 0; i < this->output_layer.getWeight().rows(); i++) {
-			const char *row_weights = reinterpret_cast<const char *>(this->output_layer.getWeight().m[i].data());
-			file.write(row_weights, this->output_layer.getWeight().m[i].size() * sizeof(double));
+			Matrix weights = this->output_layer.getWeight();
+			const char *row_weights = reinterpret_cast<const char *>(weights.m[i].data());
+			file.write(row_weights, weights.m[i].size() * sizeof(double));
 		}
-		const char *bias_data = reinterpret_cast<const char *>(this->output_layer.getBias().m[0].data());
-		file.write(bias_data, this->output_layer.getBias().m[0].size() * sizeof(double));
+		Matrix bias = this->output_layer.getBias();
+		const char *bias_data = reinterpret_cast<const char *>(bias.m[0].data());
+		file.write(bias_data, bias.m[0].size() * sizeof(double));
 
         file.close();
     } else {

@@ -118,6 +118,7 @@ CNN::CNN( const char *filename ) {
 		Eigen::TensorMap<Tensor4D> kernel((float *)kernel_data, kernel_size, kernel_size, input, filters);
 		ConvLayer conv_layer(kernel_size, input, filters, stride, padding);
 		conv_layer.setKernel(kernel);
+		std::cout << conv_layer.getBias() << std::endl;
 		this->conv_layers.push_back(conv_layer);
 		delete[] kernel_data;
 	}
@@ -163,13 +164,11 @@ CNN::CNN( const char *filename ) {
 	Matrix	bias(1, output_size);
 	std::memcpy(bias.m[0].data(), &net_config[i], output_size*sizeof(double));
 	i += output_size*sizeof(double);
-		std::cout << "i: " << input_size << ", o: " << output_size << std::endl;
 
 	OutputLayer	tmp_output_layer(input_size, output_size);
 	tmp_output_layer.setWeight(weight);
 	tmp_output_layer.setBias(bias);
 	this->output_layer = tmp_output_layer;
-	std::cout << i << std::endl;
 }
 
 CNN::~CNN() { }
