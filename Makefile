@@ -1,4 +1,4 @@
-CLANG = g++
+CLANG = c++
 FLAGS = -Wall -Wextra -Werror -Wshadow -std=c++11
 DEBUG_FLAGS = -g -fsanitize=address
 OPTIMIZATION_FLAGS = -O3
@@ -18,8 +18,8 @@ MATH_DIR = $(SRC_DIR)math/
 UTILS_DIR = $(SRC_DIR)utils/
 LAYER_DIR = $(BASE_DIR)Layers/
 STRUCTURE_DIR = $(BASE_DIR)Structures/
-OBJ_DIR = obj/
 DEBUG_OBJ_DIR = debug_obj/
+OBJ_DIR = obj/
 
 INCLUDES = $(addprefix $(INCLUDE_DIR), $(HEADERS))
 FILES = $(STRUCTURE_FILES) $(LAYER_FILES) $(MATH_FILES) $(UTILS_FILES) $(MAIN_FILE)
