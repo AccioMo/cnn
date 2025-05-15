@@ -9,7 +9,7 @@
 #define STBI_NO_PIC
 #define STBI_NO_PNM
 
-# define STB_IMAGE_IMPLEMENTATION
+#define STB_IMAGE_IMPLEMENTATION
 # include "stb_image.h"
 
 #define STB_IMAGE_WRITE_IMPLEMENTATION
@@ -22,7 +22,7 @@ double	ft_get_time(void) {
 	return (counter.tv_sec * 1000.0 + counter.tv_usec / 1000.0);
 }
 
-std::vector<Tensor4D>	get_mnist_batch( const char *filename ) {
+std::vector<Tensor4D>	get_mnist_batch( const char *filename, int batch_size, int iterations ) {
 	int img_width = 28;
 	int img_height = 28;
 	int img_channels = 1;
@@ -31,16 +31,15 @@ std::vector<Tensor4D>	get_mnist_batch( const char *filename ) {
     std::ifstream file(filename, std::ios::binary);
 	std::vector<Tensor4D>	inputs;
 
-	int	size = TRAIN_SIZE / BATCH_SIZE;
     if (file.is_open()) {
 
-		for (int b = 0; b < size; b++) {
-			Tensor4D	batch_tensor(BATCH_SIZE, img_width, img_height, img_channels);
+		for (int b = 0; b < iterations; b++) {
+			Tensor4D	batch_tensor(batch_size, img_width, img_height, img_channels);
 
-			std::vector<unsigned char> data(BATCH_SIZE * img_size);
-			file.read(reinterpret_cast<char *>(data.data()), BATCH_SIZE * img_size);
+			std::vector<unsigned char> data(batch_size * img_size);
+			file.read(reinterpret_cast<char *>(data.data()), batch_size * img_size);
 
-			for (int i = 0; i < BATCH_SIZE; i++) {
+			for (int i = 0; i < batch_size; i++) {
 				for (int j = 0; j < img_height; j++) {
 					for (int k = 0; k < img_width; k++) {
 						for (int h = 0; h < img_channels; h++) {
@@ -59,20 +58,20 @@ std::vector<Tensor4D>	get_mnist_batch( const char *filename ) {
 	return (inputs);
 }
 
-std::vector<Matrix>	get_mnist_labels( const char *filename ) {
+std::vector<Matrix>	get_mnist_labels( const char *filename, int batch_size, int iterations ) {
     std::ifstream file(filename, std::ios::binary);
 	std::vector<Matrix>	outputs;
+	int possible_outputs = 10;
 
-	int	size = TRAIN_SIZE / BATCH_SIZE;
     if (file.is_open()) {
 
-		for (int k = 0; k < size; k++) {
-			Matrix	batch_matrix(BATCH_SIZE, POSSIBILE_OUTPUTS);
+		for (int k = 0; k < iterations; k++) {
+			Matrix	batch_matrix(batch_size, possible_outputs);
 
-			std::vector<unsigned char> data(BATCH_SIZE);
-			file.read(reinterpret_cast<char *>(data.data()), BATCH_SIZE);
+			std::vector<unsigned char> data(batch_size);
+			file.read(reinterpret_cast<char *>(data.data()), batch_size);
 
-			for (int i = 0; i < BATCH_SIZE; i++) {
+			for (int i = 0; i < batch_size; i++) {
 				batch_matrix.m[i][static_cast<int>(data[i])] = 1.0;
 			}
 			outputs.push_back(batch_matrix);

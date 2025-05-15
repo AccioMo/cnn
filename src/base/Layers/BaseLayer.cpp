@@ -28,6 +28,7 @@ void	BaseLayer::update( const Matrix &inputs,
 	(void)beta2;
 	(void)timestep;
 	(void)l2_reg;
+	
 	/* ------------------------------------------------------------------- */
 	Matrix	weight_gradient = this->_gradient + (this->_weight * l2_reg);
 

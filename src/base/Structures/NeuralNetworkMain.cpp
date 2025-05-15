@@ -30,7 +30,7 @@ void	NeuralNetwork::update( const Matrix &inputs, int timestep ) {
 }
 
 void	NeuralNetwork::printData( const Matrix expected_outputs ) const {
-	double max_entropy = -std::log(1.0 / (double)POSSIBILE_OUTPUTS);
+	double max_entropy = -std::log(1.0 / (double)output_layer.getSize());
 	std::cout << "accuracy (end)\t: " << this->calculateAccuracy(expected_outputs).mean() * 100 << "%" << std::endl;
 	std::cout << "entropy\t\t: " << this->calculateEntropy().mean() << " (max " << max_entropy << ")" << std::endl;
 	std::cout << "confidence\t: " << (1.0 - (this->calculateEntropy().mean() / max_entropy)) * 100 << "%" << std::endl;

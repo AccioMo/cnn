@@ -7,6 +7,7 @@ CNN::CNN( nlohmann::json arch ) : NeuralNetwork() {
 	_learning_rate = arch["learning_rate"].get<float>();
 	_l2_lambda = arch["l2_reg"].get<float>();
 	_batch_size = arch["batch_size"].get<int>();
+	_iterations = arch["iterations"].get<int>();
 	_epochs = arch["epochs"].get<int>();
 	int input_width = arch["input"]["width"].get<int>();
 	int input_height = arch["input"]["height"].get<int>();

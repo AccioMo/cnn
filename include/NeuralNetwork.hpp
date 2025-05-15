@@ -9,7 +9,6 @@
 # include "HiddenLayer.hpp"
 # include "OutputLayer.hpp"
 # include "Matrix.hpp"
-# include "config.hpp"
 # include "math.hpp"
 # include "utils.hpp"
 
@@ -21,6 +20,7 @@ class NeuralNetwork {
 		int		_epochs;
 		int		_timestep;
 		int 	_batch_size;
+		int		_iterations;
 
 		Matrix	_entropy;
 		Matrix	_confidence;

@@ -5,7 +5,6 @@
 # include <iostream>
 # include "Matrix.hpp"
 # include "math.hpp"
-# include "config.hpp"
 
 class BaseLayer {
 	protected:

@@ -66,18 +66,24 @@ void	CNN::train( const Tensor4D &input_batch, Matrix &output_batch, int epochs, 
 
 void	CNN::trainOnFile( const char *filename, const char *labels, const char *output_file ) {
 
-	std::vector<Tensor4D>	inputs = get_mnist_batch(filename);
-	std::vector<Matrix>	outputs = get_mnist_labels(labels);
+	std::vector<Tensor4D>	inputs = get_mnist_batch(filename, 
+		_batch_size, _iterations);
+	std::vector<Matrix>		outputs = get_mnist_labels(labels, 
+		_batch_size, _iterations);
+
+	double input_min = 0.0;
+	double input_max = 255.0;
+	double output_min = 0.0;
+	double output_max = 1.0;
 
 	std::cout << "Network constructed!" << std::endl;
 
 	double start = ft_get_time();
 	std::cout << std::endl << "   --- TRAINING ---	" << std::endl;
-	int	total_iterations = TRAIN_SIZE / _batch_size;
-	for (int i = 0; i < total_iterations; i++) {
-		std::cout << "Iteration " << i + 1 << " of " << total_iterations << std::endl;
-		Tensor4D	normalized_inputs = normalize(inputs[i], INPUT_MIN, INPUT_MAX);
-		Matrix		normalized_outputs = outputs[i].normalize(OUTPUT_MIN, OUTPUT_MAX);
+	for (int i = 0; i < _iterations; i++) {
+		std::cout << "Iteration " << i + 1 << " of " << _iterations << std::endl;
+		Tensor4D	normalized_inputs = normalize(inputs[i], input_min, input_max);
+		Matrix		normalized_outputs = outputs[i].normalize(output_min, output_max);
 		this->train(normalized_inputs, normalized_outputs, _epochs, i + 1);
 		this->printData(normalized_outputs);
 		std::cout << "   ---	" << std::endl;
@@ -99,34 +105,44 @@ void	CNN::test( const Tensor4D &input, const Matrix &expected_outputs ) {
 
 void	CNN::testOnFile( const char *filename, const char *labels ) {
 
-	std::vector<Tensor4D>	t_inputs = get_mnist_batch(filename);
-	std::vector<Matrix>	t_outputs = get_mnist_labels(labels);
+	double input_min = 0.0;
+	double input_max = 255.0;
+	double output_min = 0.0;
+	double output_max = 1.0;
+
+	std::vector<Tensor4D>	t_inputs = get_mnist_batch(filename, 
+		_batch_size, _iterations);
+	std::vector<Matrix>	t_outputs = get_mnist_labels(labels, 
+		_batch_size, _iterations);
 
 	std::cout << "   --- TESTING ---" << std::endl;
 
 	double	accuracy = 0.0;
-	int	test_iterations = TEST_SIZE / _batch_size;
-	for (int i = 0; i < test_iterations; i++) {
-		std::cout << "Iteration " << i + 1 << " of " << test_iterations << std::endl;
-		Tensor4D	normalized_inputs = normalize(t_inputs[i], INPUT_MIN, INPUT_MAX);
-		Matrix	normalized_outputs = t_outputs[i].normalize(OUTPUT_MIN, OUTPUT_MAX);
+	for (int i = 0; i < _iterations; i++) {
+		std::cout << "Iteration " << i + 1 << " of " << _iterations << std::endl;
+		Tensor4D	normalized_inputs = normalize(t_inputs[i], input_min, input_max);
+		Matrix	normalized_outputs = t_outputs[i].normalize(output_min, output_max);
 		this->feedforward(normalized_inputs);
 		this->backpropagation(normalized_outputs);
 		this->printData(normalized_outputs);
 		accuracy += this->calculateAccuracy(normalized_outputs).mean();
 		std::cout << "   ---	" << std::endl;
 	}
-	accuracy /= test_iterations + 1;
+	accuracy /= _iterations + 1;
 	std::cout << "TEST ACCURACY\t: " << accuracy * 100 << "%" << std::endl;
 }
 
 Matrix	CNN::run( const Tensor4D &input ) {
-	Tensor4D	normalized_input = normalize(input, INPUT_MIN, INPUT_MAX);
+	int	possible_outputs[10] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
+
+	double min = 0.0;
+	double max = 255.0;
+
+	Tensor4D	normalized_input = normalize(input, min, max);
 
 	this->feedforward(normalized_input);
 
-	int	possible_outputs[10] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
-	for (int i = 0; i < POSSIBILE_OUTPUTS; i++) {
+	for (int i = 0; i < output_layer.getSize(); i++) {
 		std::cout << possible_outputs[i] << ": " << std::fixed << std::setprecision(2) << this->output_layer.getOutput().m[0][i] * 100 << "%" << std::endl;
 	}
 	return (this->output_layer.getOutput());
@@ -135,7 +151,7 @@ Matrix	CNN::run( const Tensor4D &input ) {
 Matrix	CNN::runOnImage( const char *filename ) {
 	int	width, height, channels;
 
-	unsigned char	*image = load_image(filename, &width, &height, &channels, 1);
+	unsigned char	*image = load_image(filename, &width, &height, &channels, 0);
 	if (image == NULL) {
 		std::cerr << "Error loading image" << std::endl;
 		return (Matrix());
@@ -144,15 +160,16 @@ Matrix	CNN::runOnImage( const char *filename ) {
 		std::cerr << "Image must be 28x28" << std::endl;
 		return (Matrix());
 	}
+	if (channels != 1) {
+		std::cerr << "Image must be grayscale" << std::endl;
+		return (Matrix());
+	}
 
 	Tensor4D	input(1, width, height, channels);
-	for (int i = 0; i < width; i++) {
-		for (int j = 0; j < width; j++) {
-			for (int k = 0; k < height; k++) {
-				if (image[j] > 255 * 0.95) 
-					input(0, i, j, k) = 0.0;
-				else
-					input(0, i, j, k) = static_cast<double>(255 - image[j]);
+	for (int y = 0; y < height; ++y) {
+		for (int x = 0; x < width; ++x) {
+			for (int c = 0; c < channels; ++c) {
+				input(0, y, x, c) = static_cast<float>(255.0f - image[y * width * channels + x * channels + c]);
 			}
 		}
 	}
@@ -249,7 +266,7 @@ void	CNN::saveConfigBin(const char *filename) const {
 }
 
 void	CNN::printData( const Matrix &expected_outputs ) const {
-	double max_entropy = -std::log(1.0 / (double)POSSIBILE_OUTPUTS);
+	double max_entropy = -std::log(1.0 / (double)output_layer.getSize());
 	std::cout << "accuracy (end)\t: " << this->calculateAccuracy(expected_outputs).mean() * 100 << "%" << std::endl;
 	std::cout << "entropy\t\t: " << this->calculateEntropy().mean() << " (max " << max_entropy << ")" << std::endl;
 	std::cout << "confidence\t: " << (1.0 - (this->calculateEntropy().mean() / max_entropy)) * 100 << "%" << std::endl;

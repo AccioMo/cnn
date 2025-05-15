@@ -48,6 +48,7 @@ Tensor4D	&ConvLayer::feedforward( const Tensor4D &prev_outputs ) {
 	this->_a = ReLU(this->_z);
 	this->_a = max_pooling(this->_a, 2);
 
+	/* --- debug --- */
 	width = this->_a.dimension(1);
 	height = this->_a.dimension(2);
 
