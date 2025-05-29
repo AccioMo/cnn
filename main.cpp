@@ -20,9 +20,49 @@ int main( int ac, char **av )
 	std::cout << "network created" << std::endl;
 	network.trainOnFile("mnist/mnist_train_images.bin", 
 						"mnist/mnist_train_labels.bin", 
-						"config-1.bin");
+						"conf.bin");
+						
+	// std::cout << "RUNNING ON [ 0 ]" << std::endl;
+	// network.runOnImage("wild_images/sample_0.png");
+	// std::cout << "RUNNING ON [ 1 ]" << std::endl;
+	// network.runOnImage("wild_images/sample_1.png");
+	// std::cout << "RUNNING ON [ 2 ]" << std::endl;;
+	// network.runOnImage("wild_images/sample_2.jpg");
+	// std::cout << "RUNNING ON [ 3 ]" << std::endl;
+	// network.runOnImage("wild_images/sample_3.png");
+	// std::cout << "RUNNING ON [ 4 ]" << std::endl;
+	// network.runOnImage("wild_images/sample_4.png");
+	// std::cout << "RUNNING ON [ 5 ]" << std::endl;
+	// network.runOnImage("wild_images/sample_5.png");
+	// std::cout << "RUNNING ON [ 6 ]" << std::endl;
+	// network.runOnImage("wild_images/sample_6.png");
+	// std::cout << "RUNNING ON [ 7 ]" << std::endl;
+	// network.runOnImage("wild_images/sample_7.png");
+	std::cout << "RUNNING ON [ 8 ]" << std::endl;
+	network.runOnImage("wild_images/sample_8.png");
+	// std::cout << "RUNNING ON [ 9 ]" << std::endl;
+	// network.runOnImage("wild_images/sample_9.png");
+	// std::cout << "RUNNING ON [ 9 ]" << std::endl;
+	// network.runOnImage("wild_images/sample_10.png");
 
-	/*
+	// std::cout << "###################################" << std::endl;
+	// std::cout << network << std::endl;
+	// std::cout << "###################################" << std::endl;
+	network = CNN("conf.bin");
+	std::cout << "RUNNING ON [ 7 ]" << std::endl;
+	network.runOnImage(av[1]);
+	// std::cout << network << std::endl;
+	// std::cout << "###################################" << std::endl;
+	// network.trainOnFile("mnist/mnist_train_images.bin", 
+	// 					"mnist/mnist_train_labels.bin", 
+	// 					"config.bin");
+	// network.runOnImage(av[1]);
+
+	// network.testOnFile("mnist/mnist_test_images.bin", 
+	// 					"mnist/mnist_test_labels.bin");
+
+
+		/*
 	if (ac > 1)
 	{
 		if (std::string(av[1]) == "train") {

@@ -7,31 +7,17 @@
 # include "nlohmann/json.hpp"
 
 class CNN : public NeuralNetwork {
+
 	private:
+
 		int	_conv_size;
 		int	_connected_size;
 
 	public:
+
 		std::vector<ConvLayer>	conv_layers;
 
 		CNN( nlohmann::json arch );
-
-		CNN( std::vector<int> input_shape, 
-				std::vector<int> conv_struct, 
-				std::vector<int> connected_struct, 
-				float learning_rate = 0.01, 
-				float l2_lambda = 0.0001, 
-				float beta1 = 0.9, 
-				float beta2 = 0.999 );
-
-		CNN( std::vector<ConvLayer> init_conv_layers,
-			std::vector<HiddenLayer> init_hidden_layers,
-			OutputLayer init_output_layer,
-			float learning_rate,
-			float l2_lambda,
-			float beta1,
-			float beta2 );
-
 		CNN( const char *filename );
 		~CNN( );
 
@@ -74,6 +60,9 @@ class CNN : public NeuralNetwork {
 		void	setEntropy( Matrix entropy );
 		void	setConfidence( Matrix confidence );
 		void	setLearningRate( double learning_rate );
+		
 };
+
+std::ostream	&operator<<(std::ostream &os, const CNN &cnn);
 
 #endif

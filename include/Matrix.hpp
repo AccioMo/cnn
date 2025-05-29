@@ -9,11 +9,14 @@
 typedef std::vector<std::vector<double>> t_vec;
 
 class Matrix {
+	
 	private:
+
 		int	_rows;
 		int	_cols;
 
 	public:
+
 		t_vec	m;
 
 		Matrix( void );

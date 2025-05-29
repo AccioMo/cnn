@@ -44,33 +44,6 @@ CNN::CNN( nlohmann::json arch ) : NeuralNetwork() {
 	_connected_size++;
 }
 
-CNN::CNN( std::vector<int> input_shape,
-		std::vector<int> convolutional_layers,
-		std::vector<int> connected_layers,
-		float learning_rate,
-		float l2_lambda,
-		float beta1,
-		float beta2 )
-	: NeuralNetwork(connected_layers, learning_rate, l2_lambda, beta1, beta2) {
-	this->conv_layers.reserve(convolutional_layers.size());
-	int input_channel = input_shape[3];
-	for (size_t i = 0; i < convolutional_layers.size(); i++) {
-		this->conv_layers.emplace_back(ConvLayer(convolutional_layers[i], input_channel, 9));
-		input_channel = 9;
-	}
-}
-
-CNN::CNN( std::vector<ConvLayer> init_conv_layers,
-		std::vector<HiddenLayer> init_hidden_layers,
-		OutputLayer init_output_layer,
-		float learning_rate,
-		float l2_lambda,
-		float beta1,
-		float beta2 )
-	: NeuralNetwork(init_hidden_layers, init_output_layer, learning_rate, l2_lambda, beta1, beta2),
-	conv_layers(init_conv_layers)
-{ }
-
 CNN::CNN( const char *filename ) {
 
 	std::cout << "Loading network from " << filename << "..." << std::endl;
@@ -99,6 +72,9 @@ CNN::CNN( const char *filename ) {
 	std::memcpy(&this->_l2_lambda, &net_config[i], sizeof(float));
 	i += sizeof(float);
 
+	std::memcpy(&this->_iterations, &net_config[i], sizeof(float));
+	i += sizeof(float);
+
 	/* retrieving convolutional layers */
 	for (int j = 0; j < this->_conv_size; j++) {
 		int kernel_size, input, filters, stride, padding;
@@ -113,13 +89,16 @@ CNN::CNN( const char *filename ) {
 		std::memcpy(&padding, &net_config[i], sizeof(int));
 		i += sizeof(int);
 		int total_size = kernel_size*kernel_size*input*filters;
-		char *kernel_data = new char[total_size*sizeof(float)];
+		char *kernel_data = new char[total_size*sizeof(float)+1];
 		std::memcpy(kernel_data, &net_config[i], total_size*sizeof(float));
 		i += total_size*sizeof(float);
 		Eigen::TensorMap<Tensor4D> kernel((float *)kernel_data, kernel_size, kernel_size, input, filters);
 		ConvLayer conv_layer(kernel_size, input, filters, stride, padding);
 		conv_layer.setKernel(kernel);
-		std::cout << conv_layer.getBias() << std::endl;
+		Tensor4D	bias(1, 1, 1, filters);
+		std::memcpy(bias.data(), &net_config[i], filters*sizeof(float));
+		i += filters*sizeof(float);
+		conv_layer.setBias(bias);
 		this->conv_layers.push_back(conv_layer);
 		delete[] kernel_data;
 	}

@@ -77,6 +77,6 @@ class BaseLayer {
 		std::string	getType() const;
 };
 
-std::ostream	&operator<<( std::ostream &os, BaseLayer &nl );
+std::ostream	&operator<<( std::ostream &os, const BaseLayer &nl );
 
 #endif

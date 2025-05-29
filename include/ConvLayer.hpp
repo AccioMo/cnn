@@ -54,15 +54,19 @@ class ConvLayer {
 							  float beta1, 
 							  float beta2 );
 		
+		/* getters */
 		Tensor4D	getKernel( void ) const;
 		Tensor4D	getBias( void ) const;
 		Tensor4D	getOutput( void ) const;
 		Tensor4D	getError( void ) const;
 		
+		/* setters */
 		int			getStride( void ) const;
 		int			getPadding( void ) const;
-
-		void	setKernel(const Tensor4D &tensor);
+		void		setKernel(const Tensor4D &tensor);
+		void		setBias(const Tensor4D &tensor);
 };
+
+std::ostream& operator<<(std::ostream &os, const ConvLayer &conv_layer);
 
 #endif

@@ -91,7 +91,7 @@ std::string  BaseLayer::getType( void ) const {
     return (this->_type);
 }
 
-std::ostream	&operator<<( std::ostream &os, BaseLayer &nl ) {
+std::ostream	&operator<<( std::ostream &os, const BaseLayer &nl ) {
 	os << "\t --- " << nl.getType() << " layer --- " << std::endl;
 	os << "  < Weights > " << std::endl << nl.getWeight() << std::endl;
 	os << std::endl;

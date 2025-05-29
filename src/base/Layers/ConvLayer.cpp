@@ -175,3 +175,18 @@ int			ConvLayer::getPadding( void ) const {
 void		ConvLayer::setKernel(const Tensor4D &tensor) {
 	this->_kernel = tensor;
 }
+
+void		ConvLayer::setBias(const Tensor4D &tensor) {
+	this->_bias = tensor;
+}
+
+std::ostream& operator<<(std::ostream &os, const ConvLayer &conv_layer) {
+	os << "ConvLayer with kernel size: " << conv_layer.getKernel().dimension(0)
+	   << ", input channels: " << conv_layer.getKernel().dimension(2)
+	   << ", output channels: " << conv_layer.getKernel().dimension(3)
+	   << ", stride: " << conv_layer.getStride()
+	   << ", padding: " << conv_layer.getPadding();
+
+	os << "\nKernel:\n" << conv_layer.getKernel() << "\n";
+	return (os);
+}

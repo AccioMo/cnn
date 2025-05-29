@@ -135,10 +135,28 @@ void	CNN::testOnFile( const char *filename, const char *labels ) {
 Matrix	CNN::run( const Tensor4D &input ) {
 	int	possible_outputs[10] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
 
-	double min = 0.0;
-	double max = 255.0;
+	// double min = 0.0;
+	// double max = 255.0;
 
-	Tensor4D	normalized_input = normalize(input, min, max);
+	// Tensor4D	normalized_input = normalize(input, min, max);
+	Tensor4D normalized_input = input;
+
+
+	// Save input tensor to file for debugging
+	std::ofstream debug_file("debug_input.txt");
+	if (debug_file.is_open()) {
+		debug_file << "Input tensor (1x" << normalized_input.dimension(1) 
+			<< "x" << normalized_input.dimension(2) 
+			<< "x" << normalized_input.dimension(3) << "):\n";
+		for (int y = 0; y < normalized_input.dimension(2); ++y) {
+			for (int x = 0; x < normalized_input.dimension(1); ++x) {
+				debug_file << static_cast<float>(normalized_input(0, y, x, 0)) << " ";
+			}
+			debug_file << "\n";
+		}
+		debug_file.close();
+		std::cout << "Input tensor saved to debug_input.txt" << std::endl;
+	}
 
 	this->feedforward(normalized_input);
 
@@ -151,7 +169,7 @@ Matrix	CNN::run( const Tensor4D &input ) {
 Matrix	CNN::runOnImage( const char *filename ) {
 	int	width, height, channels;
 
-	unsigned char	*image = load_image(filename, &width, &height, &channels, 0);
+	unsigned char	*image = load_image(filename, &width, &height, &channels, 1);
 	if (image == NULL) {
 		std::cerr << "Error loading image" << std::endl;
 		return (Matrix());
@@ -160,16 +178,16 @@ Matrix	CNN::runOnImage( const char *filename ) {
 		std::cerr << "Image must be 28x28" << std::endl;
 		return (Matrix());
 	}
-	if (channels != 1) {
-		std::cerr << "Image must be grayscale" << std::endl;
-		return (Matrix());
-	}
-
+	// if (channels != 1) {
+	// 	std::cerr << "Image must be grayscale" << std::endl;
+	// 	return (Matrix());
+	// }
+	channels = 1;
 	Tensor4D	input(1, width, height, channels);
 	for (int y = 0; y < height; ++y) {
 		for (int x = 0; x < width; ++x) {
 			for (int c = 0; c < channels; ++c) {
-				input(0, y, x, c) = static_cast<float>(255.0f - image[y * width * channels + x * channels + c]);
+				input(0, y, x, c) = static_cast<float>((255.0f - image[y * width * channels + x * channels + c]) / 255.0f);
 			}
 		}
 	}
@@ -205,6 +223,9 @@ void	CNN::saveConfigBin(const char *filename) const {
 		const char *l2_lambda = reinterpret_cast<const char *>(&this->_l2_lambda);
         file.write(l2_lambda, sizeof(this->_l2_lambda));
 
+		const char *iterations = reinterpret_cast<const char *>(&this->_iterations);
+        file.write(iterations, sizeof(this->_iterations));
+
 		/* saving convolutional layers */
 		for (const auto &c_layer : this->conv_layers) {
 			int kernel_size = c_layer.getKernel().dimension(0);
@@ -217,12 +238,12 @@ void	CNN::saveConfigBin(const char *filename) const {
 			file.write(reinterpret_cast<const char *>(&stride), sizeof(stride));
 			int padding = c_layer.getPadding();
 			file.write(reinterpret_cast<const char *>(&padding), sizeof(padding));
-			/* saving data */
+			/* saving kernel && bias */
 			Tensor4D kernel = c_layer.getKernel();
 			const char *kernel_data = reinterpret_cast<const char *>(kernel.data());
 			file.write(kernel_data, c_layer.getKernel().size() * sizeof(float));
-			// const char *kernel_bias = reinterpret_cast<const char *>(c_layer.getBias().data());
-			// file.write(kernel_bias, c_layer.getBias().size() * sizeof(float));
+			const char *kernel_bias = reinterpret_cast<const char *>(c_layer.getBias().data());
+			file.write(kernel_bias, c_layer.getBias().size() * sizeof(float));
 		}
 
 		/* saving hidden layers */
@@ -308,4 +329,26 @@ void	CNN::setConfidence( Matrix confidence  ) {
 
 void	CNN::setLearningRate( double learning_rate ) {
 	this->_learning_rate = learning_rate;
+}
+
+std::ostream &operator<<(std::ostream &os, const CNN &cnn) {
+	os << "CNN with " << cnn.conv_layers.size() << " convolutional layers and "
+	   << cnn.hidden_layers.size() << " hidden layers.";
+	if (!cnn.conv_layers.empty()) {
+		os << "\nConvolutional layers:\n";
+		for (const auto &layer : cnn.conv_layers) {
+			os << "  - " << layer << "\n";
+		}
+	}
+	if (!cnn.hidden_layers.empty()) {
+		os << "Hidden layers:\n";
+		for (const auto &layer : cnn.hidden_layers) {
+			os << "  - " << layer << "\n";
+		}
+	}
+	os << "Output layer:\n" << cnn.output_layer;
+	os << "\nLearning rate: " << cnn.getLearningRate();
+	os << "\nEntropy: " << cnn.getEntropy();
+	os << "\nConfidence: " << cnn.getConfidence();
+	return os;
 }
