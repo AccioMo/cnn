@@ -38,6 +38,6 @@ void	OutputLayer::backpropagation( const Matrix &expected_outputs ) {
 	this->_error = this->_a - expected_outputs;
 }
 
-double	OutputLayer::getAccuracy( void ) const {
+float	OutputLayer::getAccuracy( void ) const {
 	return (_accuracy);
 }

@@ -34,7 +34,7 @@
 	},
 	"epochs": 10,
 	"batch_size": 128,
-	"iterations": 20,
+	"iterations": 25,
 	"learning_rate": 0.001,
 	"l2_reg": 0.0001
 }

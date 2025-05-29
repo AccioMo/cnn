@@ -5,10 +5,10 @@ NeuralNetwork::NeuralNetwork( void )
  { }
 
 NeuralNetwork::NeuralNetwork( std::vector<int> nodes,
-							double learning_rate,
-							double l2_lambda,
-							double beta1,
-							double beta2 )
+							float learning_rate,
+							float l2_lambda,
+							float beta1,
+							float beta2 )
 	: _size(nodes.size()),
 	_learning_rate(learning_rate),
 	_l2_lambda(l2_lambda),
@@ -25,10 +25,10 @@ NeuralNetwork::NeuralNetwork( std::vector<int> nodes,
 
 NeuralNetwork::NeuralNetwork( std::vector<HiddenLayer> init_hidden_layers,
 							OutputLayer init_output_layer,
-							double learning_rate,
-							double l2_lambda,
-							double beta1,
-							double beta2 )
+							float learning_rate,
+							float l2_lambda,
+							float beta1,
+							float beta2 )
 	: _size(init_hidden_layers.size() + 2),
 	_learning_rate(learning_rate),
 	_l2_lambda(l2_lambda),
@@ -47,8 +47,8 @@ NeuralNetwork::NeuralNetwork( const char *filename ) {
 	
 	std::memcpy(&this->_size, &mnist_train_images[i], sizeof(int));
 	i += sizeof(int);
-	std::memcpy(&this->_learning_rate, &mnist_train_images[i], sizeof(double));
-	i += sizeof(double);
+	std::memcpy(&this->_learning_rate, &mnist_train_images[i], sizeof(float));
+	i += sizeof(float);
 
 	int	*config_nodes = new int[this->_size];
 	for (int j = 0; j < this->_size; j++) {
@@ -63,15 +63,15 @@ NeuralNetwork::NeuralNetwork( const char *filename ) {
 		Matrix	weight = Matrix(config_nodes[k], neurons);
 		for (int j = 0; j < config_nodes[k]; j++) {
 			for (int l = 0; l < neurons; l++) {
-				std::memcpy(&weight.m[j][l], &mnist_train_images[i], sizeof(double));
-				i += sizeof(double);
+				std::memcpy(&weight.m[j][l], &mnist_train_images[i], sizeof(float));
+				i += sizeof(float);
 			}
 		}
 		Matrix	bias = Matrix(1, neurons);
 
 		for (int j = 0; j < neurons; j++) {
-			std::memcpy(&bias.m[0][j], &mnist_train_images[i], sizeof(double));
-			i += sizeof(double);
+			std::memcpy(&bias.m[0][j], &mnist_train_images[i], sizeof(float));
+			i += sizeof(float);
 		}
 
 		HiddenLayer	hidden_layer(config_nodes[k], neurons);
@@ -87,16 +87,16 @@ NeuralNetwork::NeuralNetwork( const char *filename ) {
 
 	for (int j = 0; j < config_nodes[this->_size - 2]; j++) {
 		for (int l = 0; l < neurons; l++) {
-			std::memcpy(&weight.m[j][l], &mnist_train_images[i], sizeof(double));
-			i += sizeof(double);
+			std::memcpy(&weight.m[j][l], &mnist_train_images[i], sizeof(float));
+			i += sizeof(float);
 		}
 	}
 
 	Matrix	bias = Matrix(1, neurons);
 	
 	for (int j = 0; j < neurons; j++) {
-		std::memcpy(&bias.m[0][j], &mnist_train_images[i], sizeof(double));
-		i += sizeof(double);
+		std::memcpy(&bias.m[0][j], &mnist_train_images[i], sizeof(float));
+		i += sizeof(float);
 	}
 
 	OutputLayer	new_output_layer(config_nodes[this->_size - 2], neurons);
@@ -164,15 +164,15 @@ void	NeuralNetwork::saveConfigBin(const char *filename) const {
 
         for (const auto &layer : this->hidden_layers) {
 			for (int i = 0; i < layer.getWeight().rows(); i++) {
-				file.write(reinterpret_cast<const char *>(layer.getWeight().m[i].data()), layer.getWeight().m[i].size() * sizeof(double));
+				file.write(reinterpret_cast<const char *>(layer.getWeight().m[i].data()), layer.getWeight().m[i].size() * sizeof(float));
 			}
-			file.write(reinterpret_cast<const char *>(layer.getBias().m[0].data()), layer.getBias().m[0].size() * sizeof(double));
+			file.write(reinterpret_cast<const char *>(layer.getBias().m[0].data()), layer.getBias().m[0].size() * sizeof(float));
         }
 
         for (int i = 0; i < this->output_layer.getWeight().rows(); i++) {
-			file.write(reinterpret_cast<const char *>(this->output_layer.getWeight().m[i].data()), this->output_layer.getWeight().m[i].size() * sizeof(double));
+			file.write(reinterpret_cast<const char *>(this->output_layer.getWeight().m[i].data()), this->output_layer.getWeight().m[i].size() * sizeof(float));
 		}
-		file.write(reinterpret_cast<const char *>(this->output_layer.getBias().m[0].data()), this->output_layer.getBias().m[0].size() * sizeof(double));
+		file.write(reinterpret_cast<const char *>(this->output_layer.getBias().m[0].data()), this->output_layer.getBias().m[0].size() * sizeof(float));
 
         file.close();
     } else {

@@ -20,13 +20,13 @@ Matrix::Matrix( t_vec array ) : m(array) {
 Matrix::Matrix( int rows, int cols ) {
 	this->_rows = rows;
 	this->_cols = cols;
-	this->m = t_vec(rows, std::vector<double>(cols));
+	this->m = t_vec(rows, std::vector<float>(cols));
 }
 
-Matrix::Matrix( int rows, int cols, double std_deviation ) {
+Matrix::Matrix( int rows, int cols, float std_deviation ) {
 	this->_rows = rows;
 	this->_cols = cols;
-	this->m = t_vec(rows, std::vector<double>(cols));
+	this->m = t_vec(rows, std::vector<float>(cols));
 	if (std_deviation != 0) {
 		std::random_device					rd;
 		std::mt19937						gen(rd());
@@ -102,7 +102,7 @@ Matrix	Matrix::operator+( const Matrix &to_add ) const {
 	return (result);
 }
 
-Matrix	Matrix::operator*( const double scalar ) const {
+Matrix	Matrix::operator*( const float scalar ) const {
 	Matrix result(*this);
 	for (int i = 0; i < result.rows(); i++) {
 		for (int j = 0; j < result.cols(); j++) {
@@ -112,7 +112,7 @@ Matrix	Matrix::operator*( const double scalar ) const {
 	return (result);
 }
 
-Matrix	Matrix::operator/( const double scalar ) const {
+Matrix	Matrix::operator/( const float scalar ) const {
 	Matrix result(*this);
 	for (int i = 0; i < result.rows(); i++) {
 		for (int j = 0; j < result.cols(); j++) {
@@ -122,7 +122,7 @@ Matrix	Matrix::operator/( const double scalar ) const {
 	return (result);
 }
 
-Matrix	Matrix::operator-( const double scalar ) const {
+Matrix	Matrix::operator-( const float scalar ) const {
 	Matrix result(*this);
 	for (int i = 0; i < result.rows(); i++) {
 		for (int j = 0; j < result.cols(); j++) {
@@ -132,7 +132,7 @@ Matrix	Matrix::operator-( const double scalar ) const {
 	return (result);
 }
 
-Matrix	Matrix::operator+( const double scalar ) const {
+Matrix	Matrix::operator+( const float scalar ) const {
 	Matrix result(*this);
 	for (int i = 0; i < result.rows(); i++) {
 		for (int j = 0; j < result.cols(); j++) {
@@ -290,8 +290,8 @@ Matrix	Matrix::sqrt( void ) const {
 	return (result);
 }
 
-double	Matrix::mean( void ) const {
-	double	sum_value = 0.0;
+float	Matrix::mean( void ) const {
+	float	sum_value = 0.0;
 	for (int i = 0; i < this->rows(); i++) {
 		for (int j = 0; j < this->cols(); j++) {
 			sum_value += this->m[i][j];
@@ -314,7 +314,7 @@ Matrix	Matrix::argmax( void ) const {
 	return (result);
 }
 
-Matrix	Matrix::normalize( double min, double max ) const {
+Matrix	Matrix::normalize( float min, float max ) const {
 	Matrix	normalized_matrix(*this);
 	for (int i = 0; i < this->rows(); i++) {
 		for (int j = 0; j < this->cols(); j++) {
@@ -324,7 +324,7 @@ Matrix	Matrix::normalize( double min, double max ) const {
 	return (normalized_matrix);
 }
 
-Matrix	Matrix::denormalize( double min, double max ) const {
+Matrix	Matrix::denormalize( float min, float max ) const {
 	Matrix	denormalized_matrix(*this);
 	for (int i = 0; i < this->rows(); i++) {
 		for (int j = 0; j < this->cols(); j++) {
@@ -334,8 +334,8 @@ Matrix	Matrix::denormalize( double min, double max ) const {
 	return (denormalized_matrix);
 }
 
-double	Matrix::min() const {
-	double	minimum = std::numeric_limits<double>::max();
+float	Matrix::min() const {
+	float	minimum = std::numeric_limits<float>::max();
 	for (int i = 0; i < this->rows(); i++) {
 		for (int j = 0; j < this->cols(); j++) {
 			if (this->m[i][j] < minimum)
@@ -345,8 +345,8 @@ double	Matrix::min() const {
 	return (minimum);
 }
 
-double	Matrix::max() const {
-	double	maximum = std::numeric_limits<double>::min();
+float	Matrix::max() const {
+	float	maximum = std::numeric_limits<float>::min();
 	for (int i = 0; i < this->rows(); i++) {
 		for (int j = 0; j < this->cols(); j++) {
 			if (this->m[i][j] > maximum)
@@ -359,7 +359,7 @@ double	Matrix::max() const {
 Matrix	Matrix::row_max() const {
 	Matrix	result(this->rows(), 1);
 	for (int i = 0; i < this->rows(); i++) {
-		double	maximum = std::numeric_limits<double>::min();
+		float	maximum = std::numeric_limits<float>::min();
 		for (int j = 0; j < this->cols(); j++) {
 			if (this->m[i][j] > maximum)
 				maximum = this->m[i][j];

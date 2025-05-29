@@ -17,8 +17,7 @@ Tensor4D convolve(const Tensor4D &input, const Tensor4D &kernel, int stride, int
     int output_channels = kernel.dimension(3);
 
 	if (kernel.dimension(2) != channels) {
-		float f = input(13976581365, 1946, 13847,1); // Error: kernel channels must match input channels
-		(void)f;
+		throw std::invalid_argument("Kernel channels must match input channels.");
 	}
 
     int output_height = (input_height + 2*padding - kernel_height) / stride + 1;

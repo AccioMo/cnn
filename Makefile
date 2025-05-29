@@ -1,92 +1,82 @@
-CLANG = c++
-FLAGS = -Wall -Wextra -Werror -Wshadow -std=c++11
-DEBUG_FLAGS = -g -fsanitize=address
+CXX = c++
+CXXFLAGS = -Wall -Wextra -Werror -std=c++11 -MMD -MP
+DEBUG_FLAGS = -g -fsanitize=address -fsanitize=undefined -fsanitize=leak
 OPTIMIZATION_FLAGS = -O3
-HEADERS = math.hpp utils.hpp convolution.hpp Matrix.hpp \
-			NeuralNetwork.hpp BaseLayer.hpp HiddenLayer.hpp \
-			OutputLayer.hpp ConvLayer.hpp stb_image.h stb_image_write.h
-STRUCTURE_FILES = NeuralNetworkInit.cpp NeuralNetworkMain.cpp CNNInit.cpp CNNMain.cpp
-LAYER_FILES = BaseLayer.cpp HiddenLayer.cpp OutputLayer.cpp ConvLayer.cpp
-MATH_FILES = math.cpp Matrix.cpp tensor_math.cpp
-UTILS_FILES = utils.cpp convolution.cpp
-MAIN_FILE = main.cpp
 
-INCLUDE_DIR = include/
-SRC_DIR = src/
-BASE_DIR = $(SRC_DIR)base/
-MATH_DIR = $(SRC_DIR)math/
-UTILS_DIR = $(SRC_DIR)utils/
-LAYER_DIR = $(BASE_DIR)Layers/
-STRUCTURE_DIR = $(BASE_DIR)Structures/
-DEBUG_OBJ_DIR = debug_obj/
-OBJ_DIR = obj/
+SRC_DIR = src
+DEBUG_BUILD_DIR = debug_build
+BUILD_DIR = build
 
-INCLUDES = $(addprefix $(INCLUDE_DIR), $(HEADERS))
-FILES = $(STRUCTURE_FILES) $(LAYER_FILES) $(MATH_FILES) $(UTILS_FILES) $(MAIN_FILE)
-OBJ_FILES = $(addprefix $(OBJ_DIR), $(FILES:.cpp=.opp))
-DEBUG_OBJ_FILES = $(addprefix $(DEBUG_OBJ_DIR), $(FILES:.cpp=_debug.opp))
-NAME_DEBUG = cnn_debug
-NAME = cnn
+SRC_FILES = $(wildcard src/*.cpp) \
+			$(wildcard src/base/*.cpp) \
+			$(wildcard src/base/Layers/*.cpp) \
+			$(wildcard src/base/Network/*.cpp) \
+			$(wildcard src/math/*.cpp) \
+			$(wildcard src/utils/*.cpp)
+
+INCLUDE = -Iinclude
+CXXFLAGS += $(INCLUDE)
+
+OBJ_FILES = $(patsubst src/%.cpp,$(BUILD_DIR)/%.o,$(SRC_FILES))
+DEBUG_OBJ_FILES = $(addprefix $(DEBUG_BUILD_DIR), $(SRC_FILES:.cpp=_debug.o))
+
+# Targets
+TARGET_DEBUG = cnn_debug
+TARGET = cnn
+
+# Dependencies
+DEPS = $(OBJ_FILES:.o=.d) $(DEBUG_OBJ_FILES:.o=.d)
 
 # ==== RELEASE ==== #
 
-all: FLAGS += $(OPTIMIZATION_FLAGS)
-all: $(OBJ_DIR) $(NAME)
+all: CXXFLAGS += $(OPTIMIZATION_FLAGS)
+all: $(BUILD_DIR) $(TARGET)
 
-$(OBJ_DIR):
-	@mkdir -p $(OBJ_DIR)
+$(BUILD_DIR):
+	@mkdir -p $(BUILD_DIR)
 
-$(NAME): $(OBJ_FILES) $(INCLUDES)
-	$(CLANG) $(FLAGS) $(OBJ_FILES) -o $(NAME)
+$(TARGET): $(OBJ_FILES)
+	$(CXX) $(CXXFLAGS) $^ -o $@
+	
+$(BUILD_DIR)/%.o: $(SRC_DIR)/%.cpp
+	@mkdir -p $(dir $@)
+	$(CXX) $(CXXFLAGS) -c $< -o $@
 
-$(OBJ_DIR)%.opp: $(LAYER_DIR)%.cpp $(INCLUDES)
-	$(CLANG) $(FLAGS) -I$(INCLUDE_DIR) -c $< -o $@
-
-$(OBJ_DIR)%.opp: $(STRUCTURE_DIR)%.cpp $(INCLUDES)
-	$(CLANG) $(FLAGS) -I$(INCLUDE_DIR) -c $< -o $@
-
-$(OBJ_DIR)%.opp: $(MATH_DIR)%.cpp $(INCLUDES)
-	$(CLANG) $(FLAGS) -I$(INCLUDE_DIR) -c $< -o $@
-
-$(OBJ_DIR)%.opp: $(UTILS_DIR)%.cpp $(INCLUDES)
-	$(CLANG) $(FLAGS) -I$(INCLUDE_DIR) -c $< -o $@
-
-$(OBJ_DIR)%.opp: %.cpp $(INCLUDES)
-	$(CLANG) $(FLAGS) -I$(INCLUDE_DIR) -c $< -o $@
-
-# ==== DEBUG ==== #
-
-debug: FLAGS += $(DEBUG_FLAGS)
-debug: $(DEBUG_OBJ_DIR) $(NAME_DEBUG)
-
-$(DEBUG_OBJ_DIR):
-	@mkdir -p $(DEBUG_OBJ_DIR)
-
-$(NAME_DEBUG): $(DEBUG_OBJ_FILES) $(INCLUDES)
-	$(CLANG) $(FLAGS) $(DEBUG_OBJ_FILES) -o $(NAME_DEBUG)
-
-$(DEBUG_OBJ_DIR)%_debug.opp: $(STRUCTURE_DIR)%.cpp $(INCLUDES)
-	$(CLANG) $(FLAGS) -I$(INCLUDE_DIR) -c $< -o $@
-
-$(DEBUG_OBJ_DIR)%_debug.opp: $(LAYER_DIR)%.cpp $(INCLUDES)
-	$(CLANG) $(FLAGS) -I$(INCLUDE_DIR) -c $< -o $@
-
-$(DEBUG_OBJ_DIR)%_debug.opp: $(MATH_DIR)%.cpp $(INCLUDES)
-	$(CLANG) $(FLAGS) -I$(INCLUDE_DIR) -c $< -o $@
-
-$(DEBUG_OBJ_DIR)%_debug.opp: $(UTILS_DIR)%.cpp $(INCLUDES)
-	$(CLANG) $(FLAGS) -I$(INCLUDE_DIR) -c $< -o $@
-
-$(DEBUG_OBJ_DIR)%_debug.opp: %.cpp $(INCLUDES)
-	$(CLANG) $(FLAGS) -I$(INCLUDE_DIR) -c $< -o $@
+# Run
+run: all
+	./$(TARGET)
 
 clean:
 	rm -f $(OBJ_FILES)
 	rm -f $(DEBUG_OBJ_FILES)
 
 fclean: clean
-	rm -f $(NAME) $(NAME_DEBUG)
+	rm -f $(TARGET) $(TARGET_DEBUG)
 
 re: fclean all
 
+# ==== DEBUG ==== #
+
+gdb: debug
+	gdb $(TARGET_DEBUG)
+
+d: debug
+
+debug: CXXFLAGS += $(DEBUG_FLAGS)
+debug: $(DEBUG_BUILD_DIR) $(TARGET_DEBUG)
+
+$(DEBUG_BUILD_DIR):
+	@mkdir -p $(BUILD_DIR)
+
+$(TARGET_DEBUG): $(OBJ_FILES)
+	$(CXX) $(CXXFLAGS) $^ -o $@
+	
+$(DEBUG_BUILD_DIR)/%.o: $(SRC_DIR)/%.cpp
+	@mkdir -p $(dir $@)
+	$(CXX) $(CXXFLAGS) -c $< -o $@
+
 .PHONY: all debug clean fclean re
+
+# =============== #
+
+-include $(DEPS)

@@ -6,7 +6,7 @@
 # include <vector>
 # include <random>
 
-typedef std::vector<std::vector<double>> t_vec;
+typedef std::vector<std::vector<float>> t_vec;
 
 class Matrix {
 	
@@ -22,7 +22,7 @@ class Matrix {
 		Matrix( void );
 		Matrix( t_vec array );
 		Matrix( int rows, int cols );
-		Matrix( int rows, int cols, double rand_range );
+		Matrix( int rows, int cols, float rand_range );
 		~Matrix();
 
 		int	rows( void ) const;
@@ -44,10 +44,10 @@ class Matrix {
 		Matrix	operator==( const Matrix &m2 ) const;
 
 		/* default matrix scalar operations */
-		Matrix	operator*( const double scalar ) const;
-		Matrix	operator/( const double scalar ) const;
-		Matrix	operator-( const double scalar ) const;
-		Matrix	operator+( const double scalar ) const;
+		Matrix	operator*( const float scalar ) const;
+		Matrix	operator/( const float scalar ) const;
+		Matrix	operator-( const float scalar ) const;
+		Matrix	operator+( const float scalar ) const;
 
 		/* sums the matrix along its cols (collapsing rows) */
 		Matrix	sum_cols( void ) const;
@@ -78,19 +78,19 @@ class Matrix {
 		Matrix	argmax( void ) const;
 
 		/* calculates the arithmetic mean of the matrix */
-		double	mean( void ) const;
+		float	mean( void ) const;
 
 		/* normalizes the matrix using min-max scaling */
-		Matrix	normalize( double min, double max ) const;
+		Matrix	normalize( float min, float max ) const;
 
 		/* reverse normalizes the matrix using min-max scaling */
-		Matrix	denormalize( double min, double max ) const;
+		Matrix	denormalize( float min, float max ) const;
 
 		/* returns minimum value in the matrix */
-		double	min() const;
+		float	min() const;
 
 		/* returns maximum value in the matrix */
-		double	max() const;
+		float	max() const;
 		
 		/* returns maximum value on each row */
 		Matrix	row_max() const;

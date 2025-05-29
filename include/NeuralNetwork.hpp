@@ -38,16 +38,16 @@ class NeuralNetwork {
 		the size - aka. num of nodes (neurons) - of each layer. */
 		NeuralNetwork( );
 		NeuralNetwork( std::vector<int> nodes, 
-					double learning_rate = 0.01, 
-					double l2_lambda = 0.0001, 
-					double beta1 = 0.9, 
-					double beta2 = 0.999 );
+					float learning_rate = 0.01, 
+					float l2_lambda = 0.0001, 
+					float beta1 = 0.9, 
+					float beta2 = 0.999 );
 		NeuralNetwork( std::vector<HiddenLayer> hidden_layers, 
 					OutputLayer output_layer,
-					double learning_rate = 0.01, 
-					double l2_lambda = 0.0001, 
-					double beta1 = 0.9, 
-					double beta2 = 0.999 );
+					float learning_rate = 0.01, 
+					float l2_lambda = 0.0001, 
+					float beta1 = 0.9, 
+					float beta2 = 0.999 );
 
 		NeuralNetwork( const char *filename );
 		~NeuralNetwork( );
@@ -75,12 +75,12 @@ class NeuralNetwork {
 		/* ... getters ... */
 		Matrix	getEntropy( void ) const;
 		Matrix	getConfidence( void ) const;
-		double	getLearningRate( void ) const;
+		float	getLearningRate( void ) const;
 
 		/* ... setters ... */
 		void	setEntropy( Matrix entropy );
 		void	setConfidence( Matrix confidence );
-		void	setLearningRate( double learning_rate );
+		void	setLearningRate( float learning_rate );
 };
 
 #endif

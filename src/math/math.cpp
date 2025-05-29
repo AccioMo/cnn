@@ -61,8 +61,8 @@ Matrix	abs( const Matrix &input ) {
 	return (output);
 }
 
-double	sum( const Matrix &input ) {
-	double	output = 0;
+float	sum( const Matrix &input ) {
+	float	output = 0;
 	for (auto &row : input.m) {
 		for (auto &element : row) {
 			output += element;
@@ -81,10 +81,10 @@ Matrix	sigmoid_derivative( const Matrix &input ) {
 	return (output);
 }
 
-double	xavier_glorot_init(int fan_in, int fan_out) {
-	return (sqrt(2.0 / (double)(fan_in + fan_out)));
+float	xavier_glorot_init(int fan_in, int fan_out) {
+	return (sqrt(2.0 / (float)(fan_in + fan_out)));
 }
 
-double	he_init(int fan_in) {
-	return (sqrt(2.0 / (double)(fan_in)));
+float	he_init(int fan_in) {
+	return (sqrt(2.0 / (float)(fan_in)));
 }

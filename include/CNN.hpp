@@ -54,12 +54,12 @@ class CNN : public NeuralNetwork {
 		/* ... getters ... */
 		Matrix	getEntropy( void ) const;
 		Matrix	getConfidence( void ) const;
-		double	getLearningRate( void ) const;
+		float	getLearningRate( void ) const;
 
 		/* ... setters ... */
 		void	setEntropy( Matrix entropy );
 		void	setConfidence( Matrix confidence );
-		void	setLearningRate( double learning_rate );
+		void	setLearningRate( float learning_rate );
 		
 };
 

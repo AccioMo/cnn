@@ -30,7 +30,7 @@ void	NeuralNetwork::update( const Matrix &inputs, int timestep ) {
 }
 
 void	NeuralNetwork::printData( const Matrix expected_outputs ) const {
-	double max_entropy = -std::log(1.0 / (double)output_layer.getSize());
+	float max_entropy = -std::log(1.0 / (float)output_layer.getSize());
 	std::cout << "accuracy (end)\t: " << this->calculateAccuracy(expected_outputs).mean() * 100 << "%" << std::endl;
 	std::cout << "entropy\t\t: " << this->calculateEntropy().mean() << " (max " << max_entropy << ")" << std::endl;
 	std::cout << "confidence\t: " << (1.0 - (this->calculateEntropy().mean() / max_entropy)) * 100 << "%" << std::endl;
@@ -38,7 +38,7 @@ void	NeuralNetwork::printData( const Matrix expected_outputs ) const {
 
 Matrix	NeuralNetwork::calculateEntropy( void ) const {
 	/* entropy = -sum(p * log(p)) */
-	double	epsilon = 1e-15;
+	float	epsilon = 1e-15;
 	Matrix	predicted_outputs = this->output_layer.getOutput();
 	Matrix	entropy = predicted_outputs.hadamard_product(log(predicted_outputs + epsilon)).sum_rows() * -1.0;
 	return (entropy);
@@ -58,7 +58,7 @@ Matrix	NeuralNetwork::getConfidence( void ) const {
 	return (_confidence);
 }
 
-double	NeuralNetwork::getLearningRate( void ) const {
+float	NeuralNetwork::getLearningRate( void ) const {
 	return (_learning_rate);
 }
 
@@ -70,6 +70,6 @@ void	NeuralNetwork::setConfidence( Matrix confidence  ) {
 	this->_confidence = confidence;
 }
 
-void	NeuralNetwork::setLearningRate( double learning_rate ) {
+void	NeuralNetwork::setLearningRate( float learning_rate ) {
 	this->_learning_rate = learning_rate;
 }

@@ -4,7 +4,7 @@
 
 ConvLayer::ConvLayer( int kernel_size, int input_size, int output_size, int stride, int padding )
 	: _stride(stride), _padding(padding) {
-	double std_deviation = he_init(kernel_size * kernel_size * input_size);
+	float std_deviation = he_init(kernel_size * kernel_size * input_size);
 	std::random_device					rd;
 	std::mt19937						gen(rd());
 	std::normal_distribution<>	dis(0.0, std_deviation);

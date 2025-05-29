@@ -6,7 +6,7 @@
 
 class OutputLayer: public BaseLayer {
 	private:
-		double	_accuracy;
+		float	_accuracy;
 
 	public:
 		OutputLayer( void );
@@ -16,7 +16,7 @@ class OutputLayer: public BaseLayer {
 		Matrix	&feedforward( const Matrix &prev_outputs ) override;
 		void	backpropagation( const Matrix &expected_outputs );
 
-		double	getAccuracy( void ) const;
+		float	getAccuracy( void ) const;
 };
 
 #endif

@@ -1,7 +1,7 @@
 
 #include "math.hpp"
 
-Tensor4D	ReLU(const Tensor4D &input, double alpha) {
+Tensor4D	ReLU(const Tensor4D &input, float alpha) {
     Tensor4D output(input.dimensions());
     
     int total_size = input.size();
@@ -18,7 +18,7 @@ Tensor4D	ReLU(const Tensor4D &input, double alpha) {
     return (output);
 }
 
-Tensor4D	ReLU_derivative(const Tensor4D &input, double alpha) {
+Tensor4D	ReLU_derivative(const Tensor4D &input, float alpha) {
     Tensor4D output(input.dimensions());
     
     int total_size = input.size();
@@ -78,7 +78,7 @@ Tensor4D	unflatten(const Matrix &flat, int d1, int d2, int d3, int d4) {
 	return (tensor);
 }
 
-Tensor4D	normalize(const Tensor4D &tensor, double min, double max) {
+Tensor4D	normalize(const Tensor4D &tensor, float min, float max) {
 	Tensor4D output(tensor.dimensions());
 	
 	int total_size = tensor.size();

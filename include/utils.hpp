@@ -8,7 +8,7 @@
 # include "convolution.hpp"
 # include "Matrix.hpp"
 
-double						ft_get_time(void);
+float						ft_get_time(void);
 std::vector<Tensor4D>		get_mnist_batch( const char *filename, int batch_size, int iterations );
 std::vector<Matrix>			get_mnist_labels( const char *filename, int batch_size, int iterations );
 std::vector<unsigned char>	read_binary_file(const char *filename, size_t size);

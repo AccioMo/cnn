@@ -2,7 +2,7 @@
 #include "CNN.hpp"
 
 void	CNN::feedforward( const Tensor4D &inputs ) {
-	// double start = ft_get_time();
+	// float start = ft_get_time();
 	Tensor4D	filter_outputs = inputs;
 	for (auto &layer : conv_layers) {
 		filter_outputs = layer.feedforward(filter_outputs);
@@ -16,7 +16,7 @@ void	CNN::feedforward( const Tensor4D &inputs ) {
 }
 
 void	CNN::backpropagation( const Matrix &expected_outputs ) {
-	// double start = ft_get_time();
+	// float start = ft_get_time();
 	BaseLayer	*next_layer = &output_layer;
 	output_layer.backpropagation(expected_outputs);
 	for (int i = hidden_layers.size() - 1; i >= 0; i--) {
@@ -34,7 +34,7 @@ void	CNN::backpropagation( const Matrix &expected_outputs ) {
 }
 
 void	CNN::update( const Tensor4D &inputs, int timestep ) {
-	// double start = ft_get_time();
+	// float start = ft_get_time();
 	Tensor4D	outputs = inputs;
 	for (auto &layer : conv_layers) {
 		layer.update(outputs, this->_learning_rate, timestep, \
@@ -71,14 +71,14 @@ void	CNN::trainOnFile( const char *filename, const char *labels, const char *out
 	std::vector<Matrix>		outputs = get_mnist_labels(labels, 
 		_batch_size, _iterations);
 
-	double input_min = 0.0;
-	double input_max = 255.0;
-	double output_min = 0.0;
-	double output_max = 1.0;
+	float input_min = 0.0;
+	float input_max = 255.0;
+	float output_min = 0.0;
+	float output_max = 1.0;
 
 	std::cout << "Network constructed!" << std::endl;
 
-	double start = ft_get_time();
+	float start = ft_get_time();
 	std::cout << std::endl << "   --- TRAINING ---	" << std::endl;
 	for (int i = 0; i < _iterations; i++) {
 		std::cout << "Iteration " << i + 1 << " of " << _iterations << std::endl;
@@ -105,10 +105,10 @@ void	CNN::test( const Tensor4D &input, const Matrix &expected_outputs ) {
 
 void	CNN::testOnFile( const char *filename, const char *labels ) {
 
-	double input_min = 0.0;
-	double input_max = 255.0;
-	double output_min = 0.0;
-	double output_max = 1.0;
+	float input_min = 0.0;
+	float input_max = 255.0;
+	float output_min = 0.0;
+	float output_max = 1.0;
 
 	std::vector<Tensor4D>	t_inputs = get_mnist_batch(filename, 
 		_batch_size, _iterations);
@@ -117,7 +117,7 @@ void	CNN::testOnFile( const char *filename, const char *labels ) {
 
 	std::cout << "   --- TESTING ---" << std::endl;
 
-	double	accuracy = 0.0;
+	float	accuracy = 0.0;
 	for (int i = 0; i < _iterations; i++) {
 		std::cout << "Iteration " << i + 1 << " of " << _iterations << std::endl;
 		Tensor4D	normalized_inputs = normalize(t_inputs[i], input_min, input_max);
@@ -135,8 +135,8 @@ void	CNN::testOnFile( const char *filename, const char *labels ) {
 Matrix	CNN::run( const Tensor4D &input ) {
 	int	possible_outputs[10] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
 
-	// double min = 0.0;
-	// double max = 255.0;
+	// float min = 0.0;
+	// float max = 255.0;
 
 	// Tensor4D	normalized_input = normalize(input, min, max);
 	Tensor4D normalized_input = input;
@@ -259,11 +259,11 @@ void	CNN::saveConfigBin(const char *filename) const {
 			for (int i = 0; i < layer.getWeight().rows(); i++) {
 				Matrix weights = layer.getWeight();
 				const char *row_weights = reinterpret_cast<const char *>(weights.m[i].data());
-				file.write(row_weights, weights.m[i].size() * sizeof(double));
+				file.write(row_weights, weights.m[i].size() * sizeof(float));
 			}
 			Matrix bias = layer.getBias();
 			const char *row_bias = reinterpret_cast<const char *>(bias.m[0].data());
-			file.write(row_bias, bias.m[0].size() * sizeof(double));
+			file.write(row_bias, bias.m[0].size() * sizeof(float));
         }
 
 		/* saving output layer */
@@ -274,11 +274,11 @@ void	CNN::saveConfigBin(const char *filename) const {
         for (int i = 0; i < this->output_layer.getWeight().rows(); i++) {
 			Matrix weights = this->output_layer.getWeight();
 			const char *row_weights = reinterpret_cast<const char *>(weights.m[i].data());
-			file.write(row_weights, weights.m[i].size() * sizeof(double));
+			file.write(row_weights, weights.m[i].size() * sizeof(float));
 		}
 		Matrix bias = this->output_layer.getBias();
 		const char *bias_data = reinterpret_cast<const char *>(bias.m[0].data());
-		file.write(bias_data, bias.m[0].size() * sizeof(double));
+		file.write(bias_data, bias.m[0].size() * sizeof(float));
 
         file.close();
     } else {
@@ -287,7 +287,7 @@ void	CNN::saveConfigBin(const char *filename) const {
 }
 
 void	CNN::printData( const Matrix &expected_outputs ) const {
-	double max_entropy = -std::log(1.0 / (double)output_layer.getSize());
+	float max_entropy = -std::log(1.0 / (float)output_layer.getSize());
 	std::cout << "accuracy (end)\t: " << this->calculateAccuracy(expected_outputs).mean() * 100 << "%" << std::endl;
 	std::cout << "entropy\t\t: " << this->calculateEntropy().mean() << " (max " << max_entropy << ")" << std::endl;
 	std::cout << "confidence\t: " << (1.0 - (this->calculateEntropy().mean() / max_entropy)) * 100 << "%" << std::endl;
@@ -295,7 +295,7 @@ void	CNN::printData( const Matrix &expected_outputs ) const {
 
 Matrix	CNN::calculateEntropy( void ) const {
 	/* entropy = -sum(p * log(p)) */
-	double	epsilon = 1e-15;
+	float	epsilon = 1e-15;
 	Matrix	predicted_outputs = this->output_layer.getOutput();
 	Matrix	entropy = predicted_outputs.hadamard_product(log(predicted_outputs + epsilon)).sum_rows() * -1.0;
 	return (entropy);
@@ -315,7 +315,7 @@ Matrix	CNN::getConfidence( void ) const {
 	return (_confidence);
 }
 
-double	CNN::getLearningRate( void ) const {
+float	CNN::getLearningRate( void ) const {
 	return (_learning_rate);
 }
 
@@ -327,7 +327,7 @@ void	CNN::setConfidence( Matrix confidence  ) {
 	this->_confidence = confidence;
 }
 
-void	CNN::setLearningRate( double learning_rate ) {
+void	CNN::setLearningRate( float learning_rate ) {
 	this->_learning_rate = learning_rate;
 }
 

@@ -15,7 +15,7 @@
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 # include "stb_image_write.h"
 
-double	ft_get_time(void) {
+float	ft_get_time(void) {
 	struct timeval	counter;
 
 	gettimeofday(&counter, NULL);

@@ -114,13 +114,13 @@ CNN::CNN( const char *filename ) {
 		
 		Matrix	weight(input_size, output_size);
 		for (int k = 0; k < input_size; k++) {
-			std::memcpy(weight.m[k].data(), &net_config[i], output_size*sizeof(double));
-			i += output_size*sizeof(double);
+			std::memcpy(weight.m[k].data(), &net_config[i], output_size*sizeof(float));
+			i += output_size*sizeof(float);
 		}
 		
 		Matrix	bias = Matrix(1, output_size);
-		std::memcpy(bias.m[0].data(), &net_config[i], output_size*sizeof(double));
-		i += output_size*sizeof(double);
+		std::memcpy(bias.m[0].data(), &net_config[i], output_size*sizeof(float));
+		i += output_size*sizeof(float);
 
 		HiddenLayer	hidden_layer(input_size, output_size);
 		hidden_layer.setWeight(weight);
@@ -137,13 +137,13 @@ CNN::CNN( const char *filename ) {
 
 	Matrix	weight(input_size, output_size);
 	for (int k = 0; k < input_size; k++) {
-		std::memcpy(weight.m[k].data(), &net_config[i], output_size*sizeof(double));
-		i += output_size*sizeof(double);
+		std::memcpy(weight.m[k].data(), &net_config[i], output_size*sizeof(float));
+		i += output_size*sizeof(float);
 	}
 	
 	Matrix	bias(1, output_size);
-	std::memcpy(bias.m[0].data(), &net_config[i], output_size*sizeof(double));
-	i += output_size*sizeof(double);
+	std::memcpy(bias.m[0].data(), &net_config[i], output_size*sizeof(float));
+	i += output_size*sizeof(float);
 
 	OutputLayer	tmp_output_layer(input_size, output_size);
 	tmp_output_layer.setWeight(weight);
