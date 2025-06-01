@@ -34,10 +34,9 @@ void	BaseLayer::update( const Matrix &inputs,
 
 	this->_m = this->_m * beta1 + weight_gradient * (1.0 - beta1);
 	this->_v = this->_v * beta2 + weight_gradient.square() * (1.0 - beta2);
-
 	Matrix	m_hat = this->_m / (1.0 - std::pow(beta1, timestep));
 	Matrix	v_hat = this->_v / (1.0 - std::pow(beta2, timestep));
-	this->_gradient = m_hat / v_hat.sqrt() + 1e-8;
+	this->_gradient = m_hat / (v_hat.sqrt() + 1e-8);
 	/* ------------------------------------------------------------------- */
 
 	// std::cout << "error: " << this->_error << std::endl;

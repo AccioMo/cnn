@@ -53,7 +53,7 @@ std::vector<Tensor4D>	get_mnist_batch( const char *filename, int batch_size, int
 		}
 		file.close();
     } else {
-        std::cerr << "Error opening file: " << filename << std::endl;
+        throw std::runtime_error("error: could not open images file");
     }
 	return (inputs);
 }
@@ -78,7 +78,7 @@ std::vector<Matrix>	get_mnist_labels( const char *filename, int batch_size, int 
 		}
 		file.close();
     } else {
-        std::cout << "Error opening file: " << filename << std::endl;
+        throw std::runtime_error("error: could not open labels file");
     }
 	return (outputs);
 }
@@ -92,7 +92,7 @@ std::vector<unsigned char> read_binary_file(const char *filename, size_t size) {
         file.close();
 	    return data;
     } else {
-        std::cerr << "Error opening file: " << filename << std::endl;
+        throw std::runtime_error("error: could not open file");
     }
 
 	std::vector<unsigned char> none;
@@ -106,7 +106,7 @@ std::streamsize get_file_size(const char *filename) {
         file.close();
         return size;
     } else {
-        throw std::runtime_error("Unable to open file: ");
+        throw std::runtime_error("error: could not open file " + std::string(filename));
     }
 }
 
@@ -115,8 +115,7 @@ unsigned char *load_image(const char *filename, int *width, int *height, int *ch
     unsigned char *data = stbi_load(filename, width, height, channels, force_channels);
     
     if (data == NULL) {
-        fprintf(stderr, "Error: Could not load image '%s'\n", filename);
-        exit(1);
+        throw std::runtime_error("error: could not load image");
     }
 
     return data;
@@ -129,8 +128,7 @@ void free_image(unsigned char *data) {
 void write_image(const char* filename, int width, int height, int channels, const void* data) {
     const char* ext = strrchr(filename, '.');
     if (ext == NULL) {
-        fprintf(stderr, "Error: No file extension found in '%s'\n", filename);
-        return;
+        throw std::runtime_error("error: file must have an extention");
     }
 
     int success = 0;
@@ -143,12 +141,10 @@ void write_image(const char* filename, int width, int height, int channels, cons
     } else if (strcmp(ext, ".tga") == 0) {
         success = stbi_write_tga(filename, width, height, channels, data);
     } else {
-        fprintf(stderr, "Error: Unsupported file format '%s'\n", ext);
-        return;
+        throw std::runtime_error("error: unsupported image format");
     }
 
     if (!success) {
-        fprintf(stderr, "Error: Could not write image to '%s'\n", filename);
-		perror("");
+        throw std::runtime_error("error: could not write image to file");
     }
 }

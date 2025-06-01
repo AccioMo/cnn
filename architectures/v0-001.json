@@ -1,0 +1,52 @@
+{
+    "input": {
+        "width": 28,
+        "height": 28,
+        "channels": 1
+    },
+    "conv_layers": [
+        {
+            "filters": 32,
+            "kernel_size": 3,
+            "stride": 1,
+            "padding": "same",
+            "activation": "relu",
+            "pooling": {"type": "max", "size": 2}
+        },
+        {
+            "filters": 64,
+            "kernel_size": 3,
+            "stride": 1,
+            "padding": "same",
+            "activation": "relu",
+            "pooling": {"type": "max", "size": 2}
+        },
+        {
+            "filters": 128,
+            "kernel_size": 3,
+            "stride": 1,
+            "padding": "same",
+            "activation": "relu",
+            "pooling": {"type": "max", "size": 2}
+        }
+    ],
+    "hidden_layers": [
+        {
+            "units": 256,
+            "activation": "relu"
+        },
+        {
+            "units": 128,
+            "activation": "relu"
+        }
+    ],
+    "output_layer": {
+        "units": 10,
+        "activation": "softmax"
+    },
+    "epochs": 10,
+    "batch_size": 64,
+    "iterations": 400,
+    "learning_rate": 0.0005,
+    "l2_reg": 0.00005
+}

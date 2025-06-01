@@ -2,26 +2,65 @@
 #include "CNN.hpp"
 #include "Matrix.hpp"
 
-int main( int ac, char **av )
-{
-	(void)ac;
-	(void)av;
+static int	train_network( std::string arch_file, std::string output_file ) {
 
-	std::ifstream	config_file("architectures/v0-000.json");
+	std::ifstream	config_file(arch_file);
 	if (!config_file.is_open()) {
-		std::cerr << "Error opening file: architectures/v0-000.json" << std::endl;
+		std::cerr << "error: couldn't open file: architectures/v0-000.json" << std::endl;
 		return (1);
 	}
+
 	nlohmann::json	arch;
 	config_file >> arch;
 	config_file.close();
 
 	CNN	network(arch);
-	std::cout << "network created" << std::endl;
-	network.trainOnFile("mnist/mnist_train_images.bin", 
-						"mnist/mnist_train_labels.bin", 
-						"conf.bin");
-						
+	network.trainOnFile("mnist/mnist_train_images.bin",
+		"mnist/mnist_train_labels.bin",
+		output_file.c_str());
+	return (0);
+
+}
+
+static int test_network( std::string config_file ) {
+
+	CNN	network(config_file.c_str());
+	network.testOnFile("mnist/mnist_test_images.bin", "mnist/mnist_test_labels.bin");
+	return (0);
+
+}
+
+static int run_on_image( std::string image_path, std::string config_file ) {
+
+	CNN	network(config_file.c_str());
+	network.runOnImage(image_path.c_str());
+	return (0);
+
+}
+
+int main( int ac, char **av ){
+
+	if (ac < 2) {
+		std::cerr << "usage: " << av[0] << " <train|test|image_path>" << std::endl;
+		  std::cerr << "       " << av[0] << " train [architecture_file] [output_file]" << std::endl;
+		    std::cerr << "       " << av[0] << " test <config_file>" << std::endl;
+			  std::cerr << "       " << av[0] << " <image_path> [config_file]" << std::endl;
+		return (1);
+	}
+	
+	try {
+		if (av[1] == std::string("train")) {
+			return (train_network(ac > 2 ? av[2] : "architectures/v0-000.json",
+					ac > 3 ? av[3] : "dials.bin"));
+		} else if (av[1] == std::string("test")) {
+			return (test_network(ac > 2 ? av[2] : "dials.bin"));
+		} else {
+			return (run_on_image(av[1], ac > 2 ? av[2] : "dials.bin"));
+		}
+	} catch (const std::exception &e) {
+		std::cerr << "uh oh: " << e.what() << std::endl;
+		return (1);
+	}
 	// std::cout << "RUNNING ON [ 0 ]" << std::endl;
 	// network.runOnImage("wild_images/sample_0.png");
 	// std::cout << "RUNNING ON [ 1 ]" << std::endl;
@@ -38,66 +77,12 @@ int main( int ac, char **av )
 	// network.runOnImage("wild_images/sample_6.png");
 	// std::cout << "RUNNING ON [ 7 ]" << std::endl;
 	// network.runOnImage("wild_images/sample_7.png");
-	std::cout << "RUNNING ON [ 8 ]" << std::endl;
-	network.runOnImage("wild_images/sample_8.png");
+	// std::cout << "RUNNING ON [ 8 ]" << std::endl;
+	// network.runOnImage("wild_images/sample_8.png");
 	// std::cout << "RUNNING ON [ 9 ]" << std::endl;
 	// network.runOnImage("wild_images/sample_9.png");
 	// std::cout << "RUNNING ON [ 9 ]" << std::endl;
 	// network.runOnImage("wild_images/sample_10.png");
-
-	// std::cout << "###################################" << std::endl;
-	// std::cout << network << std::endl;
-	// std::cout << "###################################" << std::endl;
-	network = CNN("conf.bin");
-	std::cout << "RUNNING ON [ 7 ]" << std::endl;
-	network.runOnImage(av[1]);
-	// std::cout << network << std::endl;
-	// std::cout << "###################################" << std::endl;
-	// network.trainOnFile("mnist/mnist_train_images.bin", 
-	// 					"mnist/mnist_train_labels.bin", 
-	// 					"config.bin");
-	// network.runOnImage(av[1]);
-
-	// network.testOnFile("mnist/mnist_test_images.bin", 
-	// 					"mnist/mnist_test_labels.bin");
-
-
-		/*
-	if (ac > 1)
-	{
-		if (std::string(av[1]) == "train") {
-			if (ac > 2) {
-				CNN	network(av[2]);
-				network.trainOnFile("mnist/mnist_train_images.bin", 
-									"mnist/mnist_train_labels.bin", 
-									config.c_str());
-			} else {
-				CNN	network = CNN(std::vector<int>{7, 5, 3},
-									std::vector<int>{128, 64, 10},
-									0.01, 
-									0.001, 
-									0.9, 
-									0.999);
-				network.trainOnFile("mnist/mnist_train_images.bin", 
-									"mnist/mnist_train_labels.bin", 
-									config.c_str());
-	// 		}
-		} else if (std::string(av[1]) == "test") {
-			CNN	network = CNN(config.c_str());
-			network.testOnFile("mnist/mnist_test_images.bin", "mnist/mnist_test_labels.bin");
-		} else {
-			if (ac > 2) {
-				CNN	network(av[2]);
-				network.runOnImage(av[1]);
-			} else {
-				CNN	network = CNN(config.c_str());
-				network.runOnImage(av[1]);
-			}
-		}
-	} else {
-		std::cerr << "usage: ./cnn <image_path>" << std::endl;
-	}
-	*/
 
     return (0);
 }

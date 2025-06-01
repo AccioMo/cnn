@@ -46,8 +46,10 @@ CNN::CNN( nlohmann::json arch ) : NeuralNetwork() {
 
 CNN::CNN( const char *filename ) {
 
-	std::cout << "Loading network from " << filename << "..." << std::endl;
 	std::streamsize size = get_file_size(filename);
+	if (size <= 0) {
+		return ;
+	}
 	std::vector<unsigned char> net_config = read_binary_file(filename, (size_t)size);
 	
 	int	i = 0;

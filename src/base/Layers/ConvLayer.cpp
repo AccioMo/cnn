@@ -143,7 +143,7 @@ void	ConvLayer::update( const Tensor4D &inputs,
 	this->_kernel = this->_kernel - (this->_gradient * learning_rate);
 
 	Eigen::array<int, 3> sum_dims = {0, 1, 2};
-	Eigen::array<long, 4>	dims = {1, 1, 1, this->_bias.dimension(3)};
+	Eigen::array<long, 4>	dims = {1, 1, 1, (long)this->_bias.dimension(3)};
 	Tensor4D	bias_gradient = this->_error.sum(sum_dims).reshape(dims);
 	this->_bias = this->_bias - (bias_gradient * (float)learning_rate);
 }

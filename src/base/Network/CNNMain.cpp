@@ -242,8 +242,9 @@ void	CNN::saveConfigBin(const char *filename) const {
 			Tensor4D kernel = c_layer.getKernel();
 			const char *kernel_data = reinterpret_cast<const char *>(kernel.data());
 			file.write(kernel_data, c_layer.getKernel().size() * sizeof(float));
-			const char *kernel_bias = reinterpret_cast<const char *>(c_layer.getBias().data());
-			file.write(kernel_bias, c_layer.getBias().size() * sizeof(float));
+			Tensor4D bias = c_layer.getBias();
+			const char *kernel_bias = reinterpret_cast<const char *>(bias.data());
+			file.write(kernel_bias, bias.size() * sizeof(float));
 		}
 
 		/* saving hidden layers */
