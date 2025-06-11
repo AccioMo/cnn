@@ -1,85 +1,111 @@
-# As a Start...
-the chain rule allows us to compute gradients of nested or composite functions:
-for example: for a composite function `L = f(g(h(x)))`, its gradient with respect to `x` is:
-	dL/dx = dL/df * df/dg * dg/dh * dh/dx
-in a neural network, our goal is to reduce the loss  function for each layer.
+# CNN Implementation From Scratch
 
-important formulas to note, in accordance with the chain rule:
+This repository contains a complete implementation of a Convolutional Neural Network (CNN) built from the ground up in C++. The project demonstrates deep understanding of neural network fundamentals through manual implementation of forward propagation, backpropagation, and gradient descent algorithms.
+
+## Mathematical Foundation
+
+### Gradient Computation via Chain Rule
+
+The chain rule enables computation of gradients for composite functions. For a function `L = f(g(h(x)))`, the gradient with respect to `x` is:
+
 ```
-	dL/dw = dL/dz • x.T (dot product of error signal `(dL/dz)` and the layer inputs transposed)
-
-	dL/dx = w.T • dL/dz(l+1) (dot product of weights transposed and error of the next layer)
-
-	dL/dz = dL/da * f'(z) (hadamard product of loss w.r.t. post-activation outputs and derivative of pre-activation function)
-
-	dL/da = dL/dz(l+1) • w(l+1) (dot product of pre-activation outputs of next layer and next layer's weights)
+dL/dx = dL/df * df/dg * dg/dh * dh/dx
 ```
 
-in the context of this NNs, i initially used a delta, which is an intermediate quantity used to calculate both loss with respect to weights `(dL/dw)`, and loss with respect to the pre-activation outputs, or error signal `(dL/dz)`.this was merely to break up the complex operation for the first draft of the network.
+In neural networks, our objective is to minimize the loss function across all layers using the following key gradients:
 
-dL/dw is used to update the weights:
-	W(new) = W(old) - η • dL/dw		where `η` is learning rate
-this is essentially the vector of gradient descent. it allows us to optimize the gradient descent
-
-dL/dx is the intermediate step towards calculating the error; during backpropagation, we calculate delta `δ`, where:
 ```
-	δ(l) = δ(l+1) • w(l+1).T		where `l` is the current layer
-		then:
-	e = δ * f'(z(l))	where:
-		`e` is the backpropagated error
-		`δ` is the delta `(dL/dx)`
-		`f'()` is the derivative of the activation function
-		`z(l)` is the post-activation outputs of the current layer
-```
-we then use this error to calculate delta for this layer, and the process continues until we reach the earliest layer.
-
-we may avoid this intermediate step entirely through another method, by calculating loss w.r.t. pre-activation outputs `(dL/dz)` directly:
-```
-	e = w(l+1).T • e(l+1) * f'(z(l))	where:
-		`e` is the backpropagated error
-		`e(l+1)` is the error `(dL/dz(l+1))` of the next layer
-		`w(l+1).T` is the transposed weight vector of the next layer
-		`f'()` is the derivative of the activation function
-		`z(l)` is the post-activation outputs of the current layer
-```
-# In This Network...
-for each layer from l = 0 to l = n - 1 (where n is the number of layers: `_size`), i first implement a feedforward function which does the following:
-```
-	z = x • w + b	where:
-		`z` is the pre-activation output
-		`x` is the input matrix to the layer
-		'w' is the weight matrix
-		`b` is the bias
-```
-then:
-```
-	a = f(z)	where:
-		`a` is the post-activation output
-		`f()` is the activation function (ReLU, sigmoid, tanh, ...)
+dL/dw = dL/dz • x.T     // Gradient w.r.t. weights
+dL/dx = w.T • dL/dz(l+1) // Gradient w.r.t. inputs (error propagation)
+dL/dz = dL/da * f'(z)   // Error signal computation
+dL/da = dL/dz(l+1) • w(l+1) // Loss w.r.t. activations
 ```
 
-keep in mind that for each consequent layer, `x = a(l-1)`
-meaning the inputs to each layer is the activated output of the one before it.
+### Weight Update Mechanism
 
-following that is a backpropagation function, which, starting from the last layer and moving backwards, does the following:
-first off, we calculate with the error signal, which is the loss w.r.t. pre-activation output:
+Weights are updated using gradient descent:
 ```
-	dL/dz = e = dL/da * f'(z)
-		we have dL/da = dL/dz(l+1) • w(l+1)
-		so:
-	e = dL/dz(l+1) • w(l+1) *f'(z)	where:
-		`dL/dz(l+1)` is the backpropagated error from the next layer
-		`w(l+1)` is the weight vector of the next layer
-		`f'(z)` is the derivative of the activation function corresponding to the pre-activated outputs `z`
+W(new) = W(old) - η • dL/dw
 ```
-then we use that error signal to calculate the vector of gradient descent:
+where `η` represents the learning rate. This constitutes the core optimization step that drives convergence.
+
+### Backpropagation Implementation
+
+Two approaches are implemented for error propagation:
+
+**Method 1: Delta-based computation**
 ```
-	dL/dw = dL/dz • x.T
-```
-in the next step, we apply regularizations (eg. l1, l2) and optimizations (eg. Adam) to the gradient, and update the weight vector of the layer:
-```
-	w(new) = w(old) - η * dL/dw
+δ(l) = δ(l+1) • w(l+1).T
+e = δ * f'(z(l))
 ```
 
-# Rescources
-[Introduction to Convolutional Neural Networks](https://arxiv.org/pdf/1511.08458)
+**Method 2: Direct error signal computation**
+```
+e = w(l+1).T • e(l+1) * f'(z(l))
+```
+
+The second method eliminates intermediate steps and directly computes the backpropagated error, offering computational efficiency.
+## Network Architecture
+
+### Forward Propagation
+For each layer `l` from 0 to `n-1`, the forward pass computes:
+
+**Pre-activation:**
+```
+z = x • w + b
+```
+
+**Post-activation:**
+```
+a = f(z)
+```
+
+Where `f()` represents the activation function (ReLU, Sigmoid, Tanh, etc.). Note that for successive layers, `x = a(l-1)`, establishing the feed-forward data flow.
+
+### Backward Propagation
+The backpropagation algorithm proceeds from the output layer backwards, computing:
+
+**Error Signal:**
+```
+dL/dz = dL/da * f'(z)
+```
+
+**Gradient Computation:**
+```
+dL/dw = dL/dz • x.T
+```
+
+**Weight Updates:**
+The implementation supports various regularization techniques (L1, L2) and optimization algorithms (Adam) before applying the final weight update:
+```
+w(new) = w(old) - η * dL/dw
+```
+
+## Usage
+
+```bash
+# Training
+./cnn train [architecture_file] [output_file]
+
+# Testing
+./cnn test [config_file]
+
+# Image inference
+./cnn <image_path> [config_file]
+```
+
+## Key Findings and Observations
+
+1. **Bias Toward Specific Classes**: The network exhibits preference for digits 3 and 8 under uncertainty. This behavior likely stems from either class imbalance in the training dataset or stronger feature activations associated with these digits' geometric properties.
+
+2. **Abstract Shape Recognition**: Simple geometric shapes can trigger high-confidence predictions due to selective neuron activation patterns. For instance:
+   - Black dots frequently activate pathways associated with digit 9
+   - Triangular shapes tend to activate digit 4 classification pathways
+
+These observations highlight the importance of understanding learned feature representations and their relationship to network decision-making processes.
+
+*Note: This project is continuously in progress and more notes and observations as well as updates will be added.*
+
+## References
+
+- [Introduction to Convolutional Neural Networks](https://arxiv.org/pdf/1511.08458)
