@@ -2,6 +2,26 @@
 
 This repository contains a complete implementation of a Convolutional Neural Network (CNN) built from the ground up in C++. The project demonstrates deep understanding of neural network fundamentals through manual implementation of forward propagation, backpropagation, and gradient descent algorithms.
 
+### Training Process
+![Training Demo](screenshot-train.png)
+
+### Testing Results
+![Testing Demo](screenshot-test.png)
+
+The following sample images can be used to test the network:
+
+![Sample 0](wild_images/sample_0.png)
+![Sample 1](wild_images/sample_1.png)
+![Sample 2](wild_images/sample_2.jpg)
+![Sample 3](wild_images/sample_3.png)
+![Sample 4](wild_images/sample_4.png)
+![Sample 5](wild_images/sample_5.png)
+![Sample 6](wild_images/sample_6.png)
+![Sample 7](wild_images/sample_7.png)
+![Sample 8](wild_images/sample_8.png)
+![Sample 9](wild_images/sample_9.png)
+![Sample 10](wild_images/sample_10.png)
+
 ## Mathematical Foundation
 
 ### Gradient Computation via Chain Rule
