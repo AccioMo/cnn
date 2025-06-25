@@ -14,13 +14,14 @@
 
 class NeuralNetwork {
 	private:
-		int		_size;
+		int			_size;
 
 	protected:
+		std::string	_name;
 		int		_epochs;
 		int		_timestep;
 		int 	_batch_size;
-		int		_iterations;
+		int		_batches;
 
 		Matrix	_entropy;
 		Matrix	_confidence;
@@ -34,8 +35,6 @@ class NeuralNetwork {
 		std::vector<HiddenLayer>	hidden_layers;
 		OutputLayer					output_layer;
 
-		/* `nodes` is an array of size `size` (hehe). It should contain 
-		the size - aka. num of nodes (neurons) - of each layer. */
 		NeuralNetwork( );
 		NeuralNetwork( std::vector<int> nodes, 
 					float learning_rate = 0.01, 

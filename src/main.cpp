@@ -2,7 +2,7 @@
 #include "CNN.hpp"
 #include "Matrix.hpp"
 
-static int	train_network( std::string arch_file, std::string output_file ) {
+static int	train_network( std::string arch_file ) {
 
 	std::ifstream	config_file(arch_file);
 	if (!config_file.is_open()) {
@@ -16,8 +16,7 @@ static int	train_network( std::string arch_file, std::string output_file ) {
 
 	CNN	network(arch);
 	network.trainOnFile("mnist/mnist_train_images.bin",
-		"mnist/mnist_train_labels.bin",
-		output_file.c_str());
+		"mnist/mnist_train_labels.bin");
 	return (0);
 
 }
@@ -50,8 +49,7 @@ int main( int ac, char **av ){
 	
 	try {
 		if (av[1] == std::string("train")) {
-			return (train_network(ac > 2 ? av[2] : "architectures/v0-000.json",
-					ac > 3 ? av[3] : "dials.bin"));
+			return (train_network(ac > 2 ? av[2] : "architectures/v0-000.json"));
 		} else if (av[1] == std::string("test")) {
 			return (test_network(ac > 2 ? av[2] : "dials.bin"));
 		} else {

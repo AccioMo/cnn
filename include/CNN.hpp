@@ -6,6 +6,9 @@
 # include "ConvLayer.hpp"
 # include "nlohmann/json.hpp"
 
+# define TRAIN_DATASET_SIZE 60000
+# define TEST_DATASET_SIZE 10000
+
 class CNN : public NeuralNetwork {
 
 	private:
@@ -30,8 +33,8 @@ class CNN : public NeuralNetwork {
 		void	update( const Tensor4D &inputs, int timestep );
 
 		/* ... training ... */
-		void	train( const Tensor4D &input_batch, Matrix &output_batch, int epochs, int timestep );
-		void	trainOnFile( const char *filename, const char *labels, const char *output_file );
+		void	train( const Tensor4D &input_batch, Matrix &output_batch, int timestep );
+		void	trainOnFile( const char *filename, const char *labels );
 
 		/* ... testing ... */
 		void	test( const Tensor4D &input, const Matrix &expected_outputs );
@@ -49,6 +52,7 @@ class CNN : public NeuralNetwork {
 
 		/* ... evaluation ... */
 		Matrix	calculateEntropy( void ) const;
+		float	calculateLoss( const Matrix &expected_outputs ) const;
 		Matrix	calculateAccuracy( const Matrix &expected_ouputs ) const;
 
 		/* ... getters ... */

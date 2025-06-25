@@ -369,6 +369,7 @@ Matrix	Matrix::row_max() const {
 	return (result);
 }
 
+
 std::ostream& operator<<(std::ostream& os, const Matrix& matrix) {
 	os << "[";
     for (int i = 0; i < matrix.rows(); ++i) {

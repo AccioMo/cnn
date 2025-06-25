@@ -7,8 +7,12 @@ CNN::CNN( nlohmann::json arch ) : NeuralNetwork() {
 	_learning_rate = arch["learning_rate"].get<float>();
 	_l2_lambda = arch["l2_reg"].get<float>();
 	_batch_size = arch["batch_size"].get<int>();
-	_iterations = arch["iterations"].get<int>();
 	_epochs = arch["epochs"].get<int>();
+	if (arch.contains("batches")) {
+		_batches = arch["batches"].get<int>();
+	} else {
+		_batches = TRAIN_DATASET_SIZE / _batch_size;
+	}
 	int input_width = arch["input"]["width"].get<int>();
 	int input_height = arch["input"]["height"].get<int>();
 	int channels = arch["input"]["channels"].get<int>();
@@ -21,15 +25,13 @@ CNN::CNN( nlohmann::json arch ) : NeuralNetwork() {
 		this->conv_layers.emplace_back(ConvLayer(kernel_size, channels, filters, stride, padding));
 		if ((input_width - kernel_size + 2*padding) % stride != 0 || \
 			(input_height - kernel_size + 2*padding) % stride != 0) {
-			std::cerr << "error: invalid stride for input width. try different image or kernel size." << std::endl;
-			exit(1);
+			throw std::runtime_error("invalid input dimensions for convolutional layer.");
 		}
 		input_width = (input_width - kernel_size + 2*padding) / stride + 1;
 		input_height = (input_height - kernel_size + 2*padding) / stride + 1;
 		input_width = (input_width - 2) / 2 + 1;
 		input_height = (input_height - 2) / 2 + 1;
 		channels = filters;
-		std::cout << "input: " << input_width << "x" << input_height << "x" << channels << std::endl;
 		prev_layer_size = (input_width*input_height*channels);
 		_conv_size++;
 	}
@@ -41,6 +43,11 @@ CNN::CNN( nlohmann::json arch ) : NeuralNetwork() {
 	}
 	int output_size = arch["output_layer"]["units"].get<int>();
 	this->output_layer = OutputLayer(prev_layer_size, output_size);
+	if (arch.contains("name")) {
+		this->_name = arch["name"].get<std::string>();
+	} else {
+		this->_name = "cnn-dials";
+	}
 	_connected_size++;
 }
 
@@ -57,9 +64,15 @@ CNN::CNN( const char *filename ) {
 	/* retrieving sizes */
 	std::memcpy(&this->_conv_size, &net_config[i], sizeof(int));
 	i += sizeof(int);
+	if (this->_conv_size < 0) {
+		throw std::runtime_error("corrupt config.");
+	}
 
 	std::memcpy(&this->_connected_size, &net_config[i], sizeof(int));
 	i += sizeof(int);
+	if (this->_connected_size < 0) {
+		throw std::runtime_error("corrupt config.");
+	}
 
 	/* retrieving params */
 	std::memcpy(&this->_learning_rate, &net_config[i], sizeof(float));
@@ -74,7 +87,7 @@ CNN::CNN( const char *filename ) {
 	std::memcpy(&this->_l2_lambda, &net_config[i], sizeof(float));
 	i += sizeof(float);
 
-	std::memcpy(&this->_iterations, &net_config[i], sizeof(float));
+	std::memcpy(&this->_batches, &net_config[i], sizeof(float));
 	i += sizeof(float);
 
 	/* retrieving convolutional layers */
@@ -91,6 +104,9 @@ CNN::CNN( const char *filename ) {
 		std::memcpy(&padding, &net_config[i], sizeof(int));
 		i += sizeof(int);
 		int total_size = kernel_size*kernel_size*input*filters;
+		if (size_t(total_size*sizeof(float) + i) > net_config.size()) {
+			throw std::runtime_error("corrupt config.");
+		}
 		char *kernel_data = new char[total_size*sizeof(float)+1];
 		std::memcpy(kernel_data, &net_config[i], total_size*sizeof(float));
 		i += total_size*sizeof(float);
@@ -113,6 +129,10 @@ CNN::CNN( const char *filename ) {
 		int output_size;
 		std::memcpy(&output_size, &net_config[i], sizeof(int));
 		i += sizeof(int);
+
+		if (size_t(output_size*sizeof(float) + i) > net_config.size()) {
+			throw std::runtime_error("corrupt config.");
+		}
 		
 		Matrix	weight(input_size, output_size);
 		for (int k = 0; k < input_size; k++) {
@@ -151,6 +171,8 @@ CNN::CNN( const char *filename ) {
 	tmp_output_layer.setWeight(weight);
 	tmp_output_layer.setBias(bias);
 	this->output_layer = tmp_output_layer;
+	_name = std::string(filename).substr(std::string(filename).find_last_of("/\\") + 1, 
+		std::string(filename).find_last_of(".") - std::string(filename).find_last_of("/\\") - 1);
 }
 
 CNN::~CNN() { }
