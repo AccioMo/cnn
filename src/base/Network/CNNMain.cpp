@@ -2,6 +2,10 @@
 #include "CNN.hpp"
 
 void	CNN::feedforward( const Tensor4D &inputs ) {
+	/*
+	auto start = std::chrono::high_resolution_clock::now();
+	*/
+
 	Tensor4D	filter_outputs = inputs;
 	for (auto &layer : conv_layers) {
 		filter_outputs = layer.feedforward(filter_outputs);
@@ -11,9 +15,19 @@ void	CNN::feedforward( const Tensor4D &inputs ) {
 		outputs = layer.feedforward(outputs);
 	}
 	output_layer.feedforward(outputs);
+
+	/*
+	auto end = std::chrono::high_resolution_clock::now();
+	auto step = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+	std::cout << " feedforward step took " << step << " ms ";
+	*/
 }
 
 void	CNN::backpropagation( const Matrix &expected_outputs ) {
+	/*
+	auto start = std::chrono::high_resolution_clock::now();
+	*/
+
 	BaseLayer	*next_layer = &output_layer;
 	output_layer.backpropagation(expected_outputs);
 	for (int i = hidden_layers.size() - 1; i >= 0; i--) {
@@ -27,9 +41,19 @@ void	CNN::backpropagation( const Matrix &expected_outputs ) {
 		this->conv_layers[i].backpropagation(*next_conv_layer);
 		next_conv_layer = &this->conv_layers[i];
 	}
+
+	/*
+	auto end = std::chrono::high_resolution_clock::now();
+	auto step = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+	std::cout << " backpropagation step took " << step << " ms ";
+	*/
 }
 
 void	CNN::update( const Tensor4D &inputs, int timestep ) {
+	/*
+	auto start = std::chrono::high_resolution_clock::now();
+	*/
+
 	Tensor4D	outputs = inputs;
 	for (auto &layer : conv_layers) {
 		layer.update(outputs, this->_learning_rate, timestep, \
@@ -44,6 +68,12 @@ void	CNN::update( const Tensor4D &inputs, int timestep ) {
 	}
 	output_layer.update(flat_outputs, this->_learning_rate, timestep, \
 		this->_l2_lambda, this->_beta1, this->_beta2);
+
+	/*
+	auto end = std::chrono::high_resolution_clock::now();
+	auto step = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+	std::cout << " update step took " << step << " ms ";
+	*/
 }
 
 void	CNN::train( const Tensor4D &input_batch, Matrix &output_batch, int timestep ) {
