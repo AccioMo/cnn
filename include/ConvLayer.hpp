@@ -6,6 +6,7 @@ class BaseLayer;
 
 # include "convolution.hpp"
 # include "BaseLayer.hpp"
+# include <filesystem>
 
 class ConvLayer {
 	private:

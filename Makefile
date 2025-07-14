@@ -1,5 +1,5 @@
 CXX = c++
-CXXFLAGS = -Wall -Wextra -Werror -std=c++11 -MMD -MP
+CXXFLAGS = -Wall -Wextra -Werror -std=c++17 -MMD -MP
 DEBUG_FLAGS = -g -fsanitize=address -fsanitize=undefined -fsanitize=leak
 OPTIMIZATION_FLAGS = -O3
 

@@ -49,6 +49,9 @@ Tensor4D	&ConvLayer::feedforward( const Tensor4D &prev_outputs ) {
 	this->_a = max_pooling(this->_a, 2);
 
 	/* --- debug --- */
+
+	std::filesystem::create_directory("outputs/");
+
 	width = this->_a.dimension(1);
 	height = this->_a.dimension(2);
 
